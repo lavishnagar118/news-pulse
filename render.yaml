@@ -5,6 +5,7 @@ services:
   - type: web
     name: news-pulse-api
     runtime: node
+    region: singapore
     rootDir: backend
     plan: free
     buildCommand: npm install && npm run build
@@ -14,15 +15,18 @@ services:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
-        sync: false # Set in Render Dashboard to MongoDB Atlas SRV URI
+        sync: false # Configured in Render Dashboard with MongoDB Atlas SRV URI
       - key: CORS_ORIGIN
-        sync: false # Set in Render Dashboard to Vercel URL (e.g. https://news-pulse.vercel.app)
+        sync: false # Configured in Render Dashboard with Vercel deployment URL
       - key: SCRAPER_MODE
         value: http
       - key: SCRAPER_SERVICE_URL
-        sync: false # Set in Render Dashboard to the internal/external URL of news-pulse-scraper
+        fromService:
+          type: web
+          name: news-pulse-scraper
+          property: hostport
       - key: INGESTION_SERVICE_SECRET
-        generateValue: true # Secure random secret generated automatically by Render
+        generateValue: true # Cryptographically secure secret generated automatically by Render
 
   # -------------------------------------------------------------
   # 2. Python Ingestion & Topic Clustering Service
@@ -30,6 +34,7 @@ services:
   - type: web
     name: news-pulse-scraper
     runtime: python
+    region: singapore
     rootDir: scraper
     plan: free
     buildCommand: pip install -r requirements.txt
@@ -37,13 +42,19 @@ services:
     healthCheckPath: /health
     envVars:
       - key: MONGODB_URI
-        sync: false # Set in Render Dashboard to MongoDB Atlas SRV URI
-      - key: AI_PROVIDER
-        value: none
-      - key: LOG_LEVEL
-        value: INFO
+        sync: false # Configured in Render Dashboard with MongoDB Atlas SRV URI
       - key: INGESTION_SERVICE_SECRET
         fromService:
           type: web
           name: news-pulse-api
           envVarKey: INGESTION_SERVICE_SECRET
+      - key: AI_PROVIDER
+        value: none
+      - key: LOG_LEVEL
+        value: INFO
+      - key: REQUEST_TIMEOUT
+        value: "15"
+      - key: SCRAPER_USER_AGENT
+        value: "NewsPulseBot/1.0 (+https://github.com/lavishnagar118/news-pulse; contact@newspulse.internal)"
+      - key: MAX_CONTENT_BYTES
+        value: "5242880"

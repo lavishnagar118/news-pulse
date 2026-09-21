@@ -13,7 +13,11 @@ export class HttpIngestionRunner implements IIngestionRunner {
       );
     }
 
-    const targetUrl = `${config.scraperServiceUrl.replace(/\/$/, '')}/run`;
+    let baseUrl = config.scraperServiceUrl.trim().replace(/\/$/, '');
+    if (!/^https?:\/\//i.test(baseUrl)) {
+      baseUrl = `http://${baseUrl}`;
+    }
+    const targetUrl = `${baseUrl}/run`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
