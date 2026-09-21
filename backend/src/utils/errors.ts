@@ -40,3 +40,10 @@ export class ConcurrentJobError extends AppError {
     this.jobId = jobId;
   }
 }
+
+export class ConfigurationError extends AppError {
+  constructor(message: string = 'Configuration error') {
+    super(message, 500, 'CONFIGURATION_ERROR');
+  }
+}
+
