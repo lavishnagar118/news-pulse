@@ -156,6 +156,7 @@ describe('News Pulse Frontend Unit & Logic Tests', () => {
           source: 'Al Jazeera',
           url: 'https://aljazeera.com/test',
           publishedAt: '2026-09-20T20:31:15.000Z',
+          category: 'World',
         },
         {
           id: 'art-2',
@@ -164,6 +165,7 @@ describe('News Pulse Frontend Unit & Logic Tests', () => {
           source: 'NPR News',
           url: 'https://npr.org/test',
           publishedAt: '2026-09-21T08:41:50.000Z',
+          category: 'World',
         },
       ],
     };
