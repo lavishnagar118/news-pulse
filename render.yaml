@@ -1,0 +1,49 @@
+services:
+  # -------------------------------------------------------------
+  # 1. Node.js REST API Service
+  # -------------------------------------------------------------
+  - type: web
+    name: news-pulse-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false # Set in Render Dashboard to MongoDB Atlas SRV URI
+      - key: CORS_ORIGIN
+        sync: false # Set in Render Dashboard to Vercel URL (e.g. https://news-pulse.vercel.app)
+      - key: SCRAPER_MODE
+        value: http
+      - key: SCRAPER_SERVICE_URL
+        sync: false # Set in Render Dashboard to the internal/external URL of news-pulse-scraper
+      - key: INGESTION_SERVICE_SECRET
+        generateValue: true # Secure random secret generated automatically by Render
+
+  # -------------------------------------------------------------
+  # 2. Python Ingestion & Topic Clustering Service
+  # -------------------------------------------------------------
+  - type: web
+    name: news-pulse-scraper
+    runtime: python
+    rootDir: scraper
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: MONGODB_URI
+        sync: false # Set in Render Dashboard to MongoDB Atlas SRV URI
+      - key: AI_PROVIDER
+        value: none
+      - key: LOG_LEVEL
+        value: INFO
+      - key: INGESTION_SERVICE_SECRET
+        fromService:
+          type: web
+          name: news-pulse-api
+          envVarKey: INGESTION_SERVICE_SECRET
