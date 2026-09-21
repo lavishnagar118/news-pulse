@@ -7,7 +7,11 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 export const config = {
   port: parseInt(process.env.PORT || '5000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
-  mongodbUri: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/news_pulse',
+  mongodbUri:
+    process.env.TEST_MONGODB_URI ||
+    (process.env.NODE_ENV === 'test' || process.argv.some((a) => a.includes('test'))
+      ? 'mongodb://127.0.0.1:27017/news_pulse_test'
+      : process.env.MONGODB_URI) || 'mongodb://127.0.0.1:27017/news_pulse',
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   scraperMode: (process.env.SCRAPER_MODE || 'subprocess') as 'subprocess' | 'http',
   scraperServiceUrl: process.env.SCRAPER_SERVICE_URL || '',

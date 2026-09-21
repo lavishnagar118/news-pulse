@@ -1,4 +1,4 @@
-import { MongoClient, Db, Collection } from 'mongodb';
+import { MongoClient, Db, Collection, MongoClientOptions } from 'mongodb';
 import { config } from '../config';
 import { Article, Cluster, IngestionJob } from '../types';
 
@@ -13,9 +13,11 @@ export const connectDb = async (): Promise<Db> => {
     return db;
   }
 
-  client = new MongoClient(config.mongodbUri, {
+  const clientOptions: MongoClientOptions = {
     serverSelectionTimeoutMS: 5000,
-  });
+  };
+
+  client = new MongoClient(config.mongodbUri, clientOptions);
 
   await client.connect();
   // If URI includes database name, getDatabase uses it, otherwise defaults to 'news_pulse'

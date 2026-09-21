@@ -1,8 +1,14 @@
+process.env.NODE_ENV = 'test';
+// Ensure integration tests target local test database rather than remote Atlas
+if (!process.env.TEST_MONGODB_URI && (!process.env.MONGODB_URI || process.env.MONGODB_URI.includes('mongodb.net'))) {
+  process.env.MONGODB_URI = 'mongodb://127.0.0.1:27017/news_pulse_test';
+}
+
 import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
 import { createApp } from '../src/server';
-import { connectDb, closeDb, getClustersCollection, getIngestionJobsCollection } from '../src/db';
+import { connectDb, closeDb, getClustersCollection, getArticlesCollection, getIngestionJobsCollection } from '../src/db';
 import { ingestionJobService } from '../src/services/job.service';
 import { ObjectId } from 'mongodb';
 
@@ -14,15 +20,49 @@ describe('News Pulse REST API Integration Tests', () => {
   before(async () => {
     await connectDb();
 
-    // Find a cluster with member articles to test GET /clusters/:id
-    const cluster = await getClustersCollection().findOne({ articleCount: { $gte: 2 } });
+    // Find or seed a cluster with member articles to test GET /clusters/:id
+    let cluster = await getClustersCollection().findOne({ articleCount: { $gte: 2 } });
+    if (!cluster) {
+      const newClusterId = new ObjectId();
+      await getClustersCollection().insertOne({
+        _id: newClusterId,
+        label: 'Test Global Politics Cluster',
+        articleCount: 2,
+        startTime: new Date('2026-09-20T10:00:00Z'),
+        endTime: new Date('2026-09-20T12:00:00Z'),
+        createdAt: new Date(),
+      });
+      await getArticlesCollection().insertMany([
+        {
+          title: 'Election Results Announced in National Vote',
+          summary: 'Detailed summary of the election results.',
+          content: 'Full article content for election results announced today.',
+          source: 'BBC News',
+          url: 'https://example.com/election-1',
+          publishedAt: new Date('2026-09-20T10:30:00Z'),
+          imageUrl: 'https://example.com/img1.jpg',
+          category: 'Politics',
+          createdAt: new Date(),
+          clusterId: newClusterId.toString(),
+        },
+        {
+          title: 'Voter Turnout Reaches Record High in Election',
+          summary: 'Record voter numbers reported.',
+          content: 'Full article content describing voter turnout in detail.',
+          source: 'Reuters',
+          url: 'https://example.com/election-2',
+          publishedAt: new Date('2026-09-20T11:00:00Z'),
+          imageUrl: 'https://example.com/img2.jpg',
+          category: 'Politics',
+          createdAt: new Date(),
+          clusterId: newClusterId.toString(),
+        },
+      ]);
+      cluster = await getClustersCollection().findOne({ _id: newClusterId });
+    }
+
     if (cluster && cluster._id) {
       sampleClusterId = cluster._id.toString();
-    } else {
-      const anyCluster = await getClustersCollection().findOne({});
-      if (anyCluster && anyCluster._id) {
-        sampleClusterId = anyCluster._id.toString();
-      }
     }
 
     // Mock the ingestion runner to prevent executing full python scraper during integration tests
