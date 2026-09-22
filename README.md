@@ -128,7 +128,9 @@ All routes are served directly at root (no `/api` prefix):
 | `/articles/:id` | `GET` | `id` (ObjectId) | Returns full article body text, image, category, and related cluster coverage. |
 | `/articles/search` | `GET` | `q`, `category`, `source`, `limit`, `offset` | Multi-field search across titles, summaries, publishers, categories, and cluster labels. |
 | `/categories` | `GET` | — | Returns distinct categories and real-time article counts. |
-| `/ingest/trigger` | `POST` | — | Initiates asynchronous ingestion pipeline. Returns `202 Accepted` with `jobId`. Protected by concurrency guard (`409 Conflict` if run in progress). |
+| `/ingest/trigger` | `POST` | — | Public user-triggered refresh endpoint for frontend. Returns `202 Accepted` with `jobId`. Protected by concurrency guard (`409 Conflict` if run in progress). |
+| `/ingest/scheduled` | `POST` | — | Authenticated endpoint for automated cron/background freshness. Requires `Authorization: Bearer <INGESTION_SERVICE_SECRET>`. Returns `202 Accepted` (or `401 Unauthorized`). |
+| `/ingest/latest` | `GET` | — | Returns execution status and metrics for the most recent completed ingestion run. |
 | `/ingest/status/:jobId` | `GET` | `jobId` | Returns execution status (`queued`, `running`, `completed`, `failed`) and feed metrics. |
 | `/health` | `GET` | — | Health check validating service uptime and MongoDB connectivity. |
 
@@ -198,7 +200,7 @@ Audited directly against the active local MongoDB database (`news_pulse`):
 | Suite | Tech | Tests | Coverage / Verification |
 | :--- | :--- | :--- | :--- |
 | **Scraper** | `pytest` | **40 / 40 Passed** | RSS parsing, text cleaning, URL deduplication, body extraction fallbacks, og:image extraction, category heuristics, TF-IDF cosine clustering, invariant data consistency, FastAPI authentication. |
-| **Backend** | `tsx --test` | **16 / 16 Passed** | All REST endpoints, chronological ordering, 404/400 validation, concurrency guard (`409 Conflict`), job status state machine, HTTP runner tokens. |
+| **Backend** | `tsx --test` | **25 / 25 Passed** | All REST endpoints, chronological ordering, 404/400 validation, concurrency guard (`409 Conflict`), job status state machine, HTTP runner tokens, authenticated scheduled trigger (`POST /ingest/scheduled`), timing-safe auth. |
 | **Frontend** | `tsx --test` | **9 / 9 Passed** | Formatting utilities, relative times, publisher styles, category styles, multi-lane packing algorithm, source filter logic, label refinement. |
 | **Lint & Build** | `tsc`, `next build` | **0 Errors** | All 8 Next.js routes compile cleanly into static and server-rendered bundles. |
 
@@ -209,12 +211,12 @@ Audited directly against the active local MongoDB database (`news_pulse`):
 News Pulse includes two GitHub Actions automation workflows:
 1. **Continuous Integration ([`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml))**:
    - **Job 1 (Scraper)**: Runs on Ubuntu with Python 3.11, installing dependencies and executing `pytest scraper/tests -v` (40/40 passed).
-   - **Job 2 (Backend)**: Runs on Ubuntu with Node.js 18, running `npm ci`, `npm test` (22/22 passed), and `npm run build`.
+   - **Job 2 (Backend)**: Runs on Ubuntu with Node.js 18, running `npm ci`, `npm test` (25/25 passed), and `npm run build`.
    - **Job 3 (Frontend)**: Runs on Ubuntu with Node.js 18, running `npm ci`, `npm test` (9/9 passed), `npm run lint`, and `npm run build`.
 2. **Automated Background Freshness ([`.github/workflows/freshness.yml`](file:///.github/workflows/freshness.yml))**:
    - Runs every 15 minutes on a schedule offset away from the top of the hour (`17,32,47,2 * * * *`).
    - Supports `workflow_dispatch` for manual on-demand execution.
-   - Securely triggers `POST /ingest/trigger` on the production API and polls `/ingest/status/:jobId`.
+   - Securely triggers authenticated `POST /ingest/scheduled` on the production API using `Authorization: Bearer <INGESTION_SERVICE_SECRET>` and polls `/ingest/status/:jobId`.
    - Handles `409 Conflict` (concurrency guard) gracefully without failing.
    - Masks secrets and credentials to prevent log leakage.
    - Provides **periodically refreshed**, **near-real-time** news coverage while preventing Render free-tier idle spin-down.

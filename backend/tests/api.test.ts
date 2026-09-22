@@ -426,4 +426,61 @@ describe('News Pulse REST API Integration Tests', () => {
     assert.equal(res.status, 200);
     assert.ok(res.body.jobId || res.body.message);
   });
+
+  // 18. POST /ingest/scheduled rejects unauthenticated requests with 401
+  test('18. POST /ingest/scheduled rejects requests with missing secret (401)', async () => {
+    const prevSecret = process.env.INGESTION_SERVICE_SECRET;
+    process.env.INGESTION_SERVICE_SECRET = 'scheduled-test-secret-999';
+
+    try {
+      // Missing Authorization header
+      const res = await request(app).post('/ingest/scheduled').send({});
+      assert.equal(res.status, 401);
+      assert.ok(res.body.error);
+      assert.equal(res.body.error.code, 'UNAUTHORIZED');
+    } finally {
+      process.env.INGESTION_SERVICE_SECRET = prevSecret;
+    }
+  });
+
+  // 19. POST /ingest/scheduled rejects invalid secret with 401
+  test('19. POST /ingest/scheduled rejects requests with incorrect secret (401)', async () => {
+    const prevSecret = process.env.INGESTION_SERVICE_SECRET;
+    process.env.INGESTION_SERVICE_SECRET = 'scheduled-test-secret-999';
+
+    try {
+      // Incorrect Bearer token
+      const res = await request(app)
+        .post('/ingest/scheduled')
+        .set('Authorization', 'Bearer wrong-secret-token')
+        .send({});
+      assert.equal(res.status, 401);
+      assert.ok(res.body.error);
+      assert.equal(res.body.error.code, 'UNAUTHORIZED');
+    } finally {
+      process.env.INGESTION_SERVICE_SECRET = prevSecret;
+    }
+  });
+
+  // 20. POST /ingest/scheduled accepts valid Bearer secret and queues job (202)
+  test('20. POST /ingest/scheduled accepts valid secret (202)', async () => {
+    const prevSecret = process.env.INGESTION_SERVICE_SECRET;
+    process.env.INGESTION_SERVICE_SECRET = 'scheduled-test-secret-999';
+
+    try {
+      // Valid Bearer token with force=true to bypass concurrency guard if earlier job is still queued
+      const res = await request(app)
+        .post('/ingest/scheduled')
+        .set('Authorization', 'Bearer scheduled-test-secret-999')
+        .send({ force: true });
+
+      assert.equal(res.status, 202);
+      assert.ok(res.body.jobId);
+      assert.equal(res.body.status, 'queued');
+      createdTestJobIds.push(res.body.jobId);
+    } finally {
+      process.env.INGESTION_SERVICE_SECRET = prevSecret;
+    }
+  });
 });
+

@@ -12,7 +12,7 @@ logger = logging.getLogger("news-pulse.backfill")
 
 
 def backfill() -> None:
-    logger.info("Connecting to MongoDB: %s", Config.MONGODB_URI)
+    logger.info("Connecting to MongoDB database...")
     client = MongoClient(Config.MONGODB_URI)
     db = client.get_default_database()
     articles_col = db["articles"]

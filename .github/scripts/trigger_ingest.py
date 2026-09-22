@@ -31,10 +31,10 @@ def make_request(path: str, method: str = "GET", data: bytes = None):
     if data is not None:
         headers["Content-Type"] = "application/json"
 
-    # Attach secret if provided, without ever logging it
+    # Attach secret if provided, without ever logging or leaking it
     if SECRET:
-        headers["X-Ingestion-Secret"] = SECRET
         headers["Authorization"] = f"Bearer {SECRET}"
+        headers["X-Ingestion-Secret"] = SECRET
 
     req = urllib.request.Request(url, data=data, headers=headers, method=method)
     return urllib.request.urlopen(req, timeout=30)
@@ -43,18 +43,25 @@ def make_request(path: str, method: str = "GET", data: bytes = None):
 def main():
     print(f"Triggering automated background news ingestion via {API_BASE_URL}...")
 
-    # 1. Trigger ingestion
+    if not SECRET:
+        print("Error: INGESTION_SERVICE_SECRET is required to authenticate with the scheduled trigger.")
+        sys.exit(1)
+
+    # 1. Trigger scheduled ingestion endpoint
     try:
-        with make_request("/ingest/trigger", method="POST", data=b"{}") as resp:
+        with make_request("/ingest/scheduled", method="POST", data=b"{}") as resp:
             status_code = resp.status
             body = json.loads(resp.read().decode("utf-8"))
             job_id = body.get("jobId")
-            print(f"Ingestion job triggered successfully. Job ID: {job_id} (HTTP {status_code})")
+            print(f"Scheduled ingestion job accepted. Job ID: {job_id} (HTTP {status_code})")
     except urllib.error.HTTPError as err:
         err_body = err.read().decode("utf-8")
         if err.code == 409:
             print("Notice: An ingestion job is currently already running (HTTP 409 Conflict). Skipping concurrent run.")
             sys.exit(0)
+        if err.code == 401:
+            print("Error: Ingestion rejected with HTTP 401 Unauthorized. Authentication failed.")
+            sys.exit(1)
         print(f"Error: Ingestion trigger rejected with HTTP {err.code}: {err_body}")
         sys.exit(1)
     except Exception as err:
