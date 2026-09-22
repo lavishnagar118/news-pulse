@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { RefreshCw, CheckCircle, AlertCircle, Loader2, Clock } from 'lucide-react';
 import { triggerIngestion, pollJobStatus, fetchLatestJobStatus } from '@/lib/api';
 import { IngestionJob } from '@/lib/types';
+import { formatRefreshCompletion, formatRefreshError } from '@/lib/formatters';
 
 interface IngestionControlProps {
   onRefreshCompleted: () => Promise<void>;
@@ -36,43 +37,33 @@ export const IngestionControl: React.FC<IngestionControlProps> = ({
     setIsRefreshing(true);
     setErrorMessage(null);
     setSuccessMessage(null);
-    setStatusMessage('Connecting to feeds...');
+    setStatusMessage('Refreshing news…');
 
     try {
-      // 1. POST /ingest/trigger
+      // 1. Trigger ingestion
       const triggerRes = await triggerIngestion();
       const jobId = triggerRes.jobId;
 
-      setStatusMessage('Ingesting & clustering stories...');
+      setStatusMessage('Processing latest stories…');
 
       // 2. Poll status
       const completedJob = await pollJobStatus(
         jobId,
         (job: IngestionJob) => {
           if (job.status === 'running') {
-            if (job.stats && job.stats.articlesFetched > 0) {
-              setStatusMessage('Extracting article content & clustering topics...');
-            } else {
-              setStatusMessage('Connecting to RSS feeds & ingesting articles...');
-            }
+            setStatusMessage('Processing latest stories…');
           }
         },
         2000,
         90000
       );
 
-      // 3. Completed: reload timeline and show real statistics
-      setStatusMessage('Refreshing timeline data...');
+      // 3. Completed: reload timeline and show human-readable statistics
+      setStatusMessage('Processing latest stories…');
       await onRefreshCompleted();
 
-      const added = completedJob.stats?.articlesAdded ?? 0;
-      const dupes = completedJob.stats?.duplicatesSkipped ?? 0;
-
-      if (added > 0) {
-        setSuccessMessage(`Updated just now · ${added} new ${added === 1 ? 'story' : 'stories'} · ${dupes} duplicates skipped`);
-      } else {
-        setSuccessMessage("You're up to date · No new stories found");
-      }
+      const completionText = formatRefreshCompletion(completedJob.stats);
+      setSuccessMessage(completionText);
       setLastSyncText('Last synced: just now');
       setStatusMessage(null);
 
@@ -81,7 +72,7 @@ export const IngestionControl: React.FC<IngestionControlProps> = ({
         setSuccessMessage(null);
       }, 6000);
     } catch (err: any) {
-      setErrorMessage(err?.message || 'Failed to complete ingestion pipeline.');
+      setErrorMessage(formatRefreshError(err));
       setStatusMessage(null);
     } finally {
       setIsRefreshing(false);
@@ -89,42 +80,43 @@ export const IngestionControl: React.FC<IngestionControlProps> = ({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-3" aria-live="polite" aria-atomic="true">
       {/* Live Refresh Button */}
       <button
         type="button"
         onClick={handleRefresh}
         disabled={isRefreshing || isGlobalLoading}
-        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-60 disabled:cursor-not-allowed shadow-xs transition-all duration-150"
-        aria-label="Refresh news feeds and re-cluster timeline"
+        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xs text-xs font-semibold bg-white border border-stone-300 text-stone-800 hover:bg-stone-50 hover:text-stone-900 active:bg-stone-100 disabled:opacity-60 disabled:cursor-not-allowed shadow-2xs transition-colors focus:outline-none focus:ring-2 focus:ring-stone-400"
+        aria-label={isRefreshing ? 'Refreshing news stories' : 'Refresh news data'}
       >
-        <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-        <span>{isRefreshing ? 'Updating News...' : 'Refresh Data'}</span>
+        <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-stone-600' : 'text-stone-500'}`} />
+        <span>{isRefreshing ? 'Refreshing…' : 'Refresh Data'}</span>
       </button>
 
       {/* Progress / Status Indicators */}
       {isRefreshing && statusMessage && (
-        <div className="inline-flex items-center gap-2 text-xs font-medium text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200 animate-pulse">
-          <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
+        <div className="inline-flex items-center gap-2 text-xs font-medium text-stone-700 bg-stone-50 px-3 py-1.5 rounded-xs border border-stone-200 animate-pulse">
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-stone-600" />
           <span>{statusMessage}</span>
         </div>
       )}
 
       {successMessage && !isRefreshing && (
-        <div className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+        <div className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-800 bg-stone-50 px-3 py-1.5 rounded-xs border border-stone-200">
           <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
           <span>{successMessage}</span>
         </div>
       )}
 
       {errorMessage && !isRefreshing && (
-        <div className="inline-flex items-center gap-1.5 text-xs font-medium text-red-700 bg-red-50 px-3 py-1.5 rounded-lg border border-red-200">
-          <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+        <div className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-800 bg-stone-50 px-3 py-1.5 rounded-xs border border-stone-200">
+          <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
           <span>{errorMessage}</span>
           <button
             type="button"
             onClick={() => setErrorMessage(null)}
-            className="ml-1 text-[11px] underline hover:no-underline text-red-800"
+            className="ml-1 text-[11px] underline hover:no-underline text-stone-600"
+            aria-label="Dismiss message"
           >
             Dismiss
           </button>

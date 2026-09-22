@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Search, RefreshCw, Menu, X, Activity } from 'lucide-react';
 import { triggerIngestion, pollJobStatus, fetchLatestJobStatus } from '@/lib/api';
 import { useScrollState } from '@/hooks/useScrollState';
+import { formatRefreshCompletion, formatRefreshError } from '@/lib/formatters';
 
 const CATEGORIES = [
   { name: 'Home', href: '/' },
@@ -76,31 +77,20 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
   const handleRefresh = async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
-    setRefreshMessage('Connecting to feeds...');
+    setRefreshMessage('Refreshing news…');
 
     try {
       const { jobId } = await triggerIngestion();
-      setRefreshMessage('Processing stories...');
+      setRefreshMessage('Processing latest stories…');
 
       const completedJob = await pollJobStatus(jobId, (job) => {
         if (job.status === 'running') {
-          if (job.stats && job.stats.articlesFetched > 0) {
-            setRefreshMessage('Clustering topics...');
-          } else {
-            setRefreshMessage('Ingesting feeds...');
-          }
+          setRefreshMessage('Processing latest stories…');
         }
       });
 
-      const added = completedJob.stats?.articlesAdded ?? 0;
-      const dupes = completedJob.stats?.duplicatesSkipped ?? 0;
-
-      if (added > 0) {
-        setRefreshMessage(`Updated just now · ${added} new ${added === 1 ? 'story' : 'stories'} · ${dupes} skipped`);
-      } else {
-        setRefreshMessage("You're up to date · No new stories found");
-      }
-
+      const completionText = formatRefreshCompletion(completedJob.stats);
+      setRefreshMessage(completionText);
       setLastUpdatedText('Last synced: just now');
 
       if (typeof window !== 'undefined') {
@@ -115,7 +105,7 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
         setIsRefreshing(false);
       }, 5000);
     } catch (err: any) {
-      setRefreshMessage(err.message || 'Refresh failed');
+      setRefreshMessage(formatRefreshError(err));
       setTimeout(() => {
         setRefreshMessage(null);
         setIsRefreshing(false);
@@ -165,9 +155,9 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
             )}
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3" aria-live="polite" aria-atomic="true">
             {refreshMessage && (
-              <span className="text-[11px] font-medium text-stone-700 bg-stone-100 px-2 py-0.5 rounded border border-stone-200 animate-pulse truncate max-w-[200px] sm:max-w-none">
+              <span className="text-[11px] font-medium text-stone-700 bg-stone-100 px-2 py-0.5 rounded border border-stone-200 truncate max-w-[240px] sm:max-w-none">
                 {refreshMessage}
               </span>
             )}
@@ -175,12 +165,12 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
               type="button"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              aria-label="Refresh news data"
+              aria-label={isRefreshing ? 'Refreshing news stories' : 'Refresh news data'}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xs text-xs font-semibold bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors disabled:opacity-60 cursor-pointer shadow-2xs focus:outline-none focus:ring-2 focus:ring-stone-400"
               title="Trigger real-time RSS ingestion and topic clustering"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-blue-600' : 'text-stone-500'}`} />
-              <span>{isRefreshing ? 'Updating...' : 'Refresh Data'}</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-stone-600' : 'text-stone-500'}`} />
+              <span>{isRefreshing ? 'Refreshing…' : 'Refresh Data'}</span>
             </button>
           </div>
         </div>
@@ -267,9 +257,9 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
           <div className="hidden lg:flex items-center gap-3 shrink-0">
             {/* Scrolled State Refresh Trigger */}
             {isScrolled && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" aria-live="polite" aria-atomic="true">
                 {refreshMessage && (
-                  <span className="text-[11px] font-medium text-stone-700 bg-stone-100 px-2 py-0.5 rounded border border-stone-200 animate-pulse truncate max-w-[160px]">
+                  <span className="text-[11px] font-medium text-stone-700 bg-stone-100 px-2 py-0.5 rounded border border-stone-200 truncate max-w-[200px]">
                     {refreshMessage}
                   </span>
                 )}
@@ -277,12 +267,12 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
                   type="button"
                   onClick={handleRefresh}
                   disabled={isRefreshing}
-                  aria-label="Refresh news data"
+                  aria-label={isRefreshing ? 'Refreshing news stories' : 'Refresh news data'}
                   className="inline-flex items-center gap-1.5 px-2 py-1 rounded-xs text-xs font-semibold bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors disabled:opacity-60 cursor-pointer shadow-2xs focus:outline-none focus:ring-2 focus:ring-stone-400"
                   title="Trigger real-time RSS ingestion and topic clustering"
                 >
-                  <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin text-blue-600' : 'text-stone-500'}`} />
-                  <span>{isRefreshing ? 'Updating...' : 'Refresh'}</span>
+                  <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin text-stone-600' : 'text-stone-500'}`} />
+                  <span>{isRefreshing ? 'Refreshing…' : 'Refresh'}</span>
                 </button>
               </div>
             )}
@@ -445,15 +435,21 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
           })}
 
           {/* Drawer Refresh Button */}
-          <div className="pt-4 mt-2 border-t border-stone-100">
+          <div className="pt-4 mt-2 border-t border-stone-100" aria-live="polite" aria-atomic="true">
+            {refreshMessage && (
+              <div className="mb-2 text-xs font-medium text-stone-700 bg-stone-50 px-3 py-1.5 rounded-xs border border-stone-200 text-center">
+                {refreshMessage}
+              </div>
+            )}
             <button
               type="button"
               onClick={handleRefresh}
               disabled={isRefreshing}
+              aria-label={isRefreshing ? 'Refreshing news stories' : 'Refresh news data'}
               className="w-full min-h-[44px] flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-stone-800 bg-stone-100 hover:bg-stone-200 active:bg-stone-300 rounded-xs transition-colors disabled:opacity-60"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-blue-600' : 'text-stone-600'}`} />
-              <span>{isRefreshing ? 'Updating stories...' : 'Refresh News Data'}</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-stone-600' : 'text-stone-600'}`} />
+              <span>{isRefreshing ? 'Refreshing news…' : 'Refresh News Data'}</span>
             </button>
           </div>
         </div>

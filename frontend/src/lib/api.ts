@@ -92,7 +92,7 @@ export async function triggerIngestion(force: boolean = false): Promise<Ingestio
     body: JSON.stringify({ force }),
   });
 
-  const body = await res.json();
+  const body = await res.json().catch(() => ({}));
 
   if (res.status === 409) {
     // Concurrency guard active: returns existing active jobId
@@ -100,11 +100,11 @@ export async function triggerIngestion(force: boolean = false): Promise<Ingestio
     if (activeJobId) {
       return { jobId: activeJobId, status: 'queued' };
     }
-    throw new Error(body?.error?.message || 'An ingestion run is already in progress');
+    throw new Error('Refresh already in progress…');
   }
 
   if (!res.ok) {
-    throw new Error(body?.error?.message || `Failed to trigger ingestion (${res.status})`);
+    throw new Error("Couldn't refresh news right now. Please try again.");
   }
 
   return body;
@@ -117,8 +117,7 @@ export async function triggerIngestion(force: boolean = false): Promise<Ingestio
 export async function fetchJobStatus(jobId: string): Promise<IngestionJob> {
   const res = await fetch(`${getApiBaseUrl()}/ingest/status/${jobId}`, { cache: 'no-store' });
   if (!res.ok) {
-    const errorBody = await res.json().catch(() => ({}));
-    throw new Error(errorBody?.error?.message || `Failed to get job status (${res.status})`);
+    throw new Error("Couldn't refresh news right now. Please try again.");
   }
 
   return res.json();
@@ -143,13 +142,13 @@ export async function pollJobStatus(
       return job;
     }
     if (job.status === 'failed') {
-      throw new Error(job.error || 'Ingestion job failed');
+      throw new Error("Couldn't refresh news right now. Please try again.");
     }
 
     await new Promise((resolve) => setTimeout(resolve, intervalMs));
   }
 
-  throw new Error(`Ingestion job ${jobId} polling timed out.`);
+  throw new Error("Couldn't refresh news right now. Please try again.");
 }
 
 /**

@@ -6,6 +6,8 @@ import {
   formatTime,
   formatTimeSpan,
   getSourceBadgeStyle,
+  formatRefreshCompletion,
+  formatRefreshError,
 } from '../src/lib/formatters';
 import { TimelineItem, ClusterDetail } from '../src/lib/types';
 
@@ -178,20 +180,98 @@ describe('News Pulse Frontend Unit & Logic Tests', () => {
     assert.equal(mockDetail.articles[1].source, 'NPR News');
   });
 
-  // 6. Ingestion Refresh State Machine
-  test('6. Ingestion refresh status transition simulation', () => {
-    const statuses: string[] = [];
-    const updateStatus = (s: string) => statuses.push(s);
+  // 6. Ingestion Refresh Human-Readable Status Presentation Tests
+  test('6a. Ingestion refresh processing & triggering human-readable states', () => {
+    const triggeringText = 'Refreshing news…';
+    const processingText = 'Processing latest stories…';
 
-    updateStatus('Triggering ingestion pipeline...');
-    updateStatus('Connecting to RSS feeds & ingesting articles...');
-    updateStatus('Extracting article content & clustering topics...');
-    updateStatus('Refreshing timeline data...');
-    updateStatus('Data refreshed successfully');
+    assert.equal(triggeringText, 'Refreshing news…');
+    assert.equal(processingText, 'Processing latest stories…');
+  });
 
-    assert.equal(statuses.length, 5);
-    assert.equal(statuses[0], 'Triggering ingestion pipeline...');
-    assert.equal(statuses[statuses.length - 1], 'Data refreshed successfully');
+  test('6b. formatRefreshCompletion: completed with new stories', () => {
+    const resMultiple = formatRefreshCompletion({
+      articlesAdded: 5,
+      duplicatesSkipped: 12,
+      feedsFailed: 0,
+    });
+    assert.equal(resMultiple, 'Updated just now · 5 new stories · 12 duplicates skipped');
+
+    const resSingle = formatRefreshCompletion({
+      articlesAdded: 1,
+      duplicatesSkipped: 0,
+      feedsFailed: 0,
+    });
+    assert.equal(resSingle, 'Updated just now · 1 new story · 0 duplicates skipped');
+  });
+
+  test('6c. formatRefreshCompletion: completed with zero new stories', () => {
+    const resZero = formatRefreshCompletion({
+      articlesAdded: 0,
+      duplicatesSkipped: 61,
+      feedsFailed: 0,
+    });
+    assert.equal(resZero, "You're up to date · No new stories found");
+  });
+
+  test('6d. formatRefreshCompletion: completed with feed failures (partial source coverage)', () => {
+    const resPartialWithStories = formatRefreshCompletion({
+      articlesAdded: 4,
+      duplicatesSkipped: 8,
+      feedsFailed: 1,
+    });
+    assert.equal(resPartialWithStories, 'Updated with partial source coverage · 4 new stories');
+
+    const resPartialSingle = formatRefreshCompletion({
+      articlesAdded: 1,
+      duplicatesSkipped: 2,
+      feedsFailed: 2,
+    });
+    assert.equal(resPartialSingle, 'Updated with partial source coverage · 1 new story');
+
+    const resPartialNoStories = formatRefreshCompletion({
+      articlesAdded: 0,
+      duplicatesSkipped: 10,
+      feedsFailed: 1,
+    });
+    assert.equal(resPartialNoStories, 'Updated with partial source coverage · No new stories found');
+  });
+
+  test('6e. formatRefreshError: handles 409 concurrent ingestion gracefully', () => {
+    const err409 = new Error('409 Conflict: An ingestion job is already in progress');
+    assert.equal(formatRefreshError(err409), 'Refresh already in progress…');
+
+    const errCode = new Error('CONCURRENT_JOB_RUNNING');
+    assert.equal(formatRefreshError(errCode), 'Refresh already in progress…');
+  });
+
+  test('6f. formatRefreshError: handles failure gracefully with polite human copy', () => {
+    const networkErr = new Error('Failed to fetch from /ingest/trigger: 500 Internal Server Error');
+    assert.equal(formatRefreshError(networkErr), "Couldn't refresh news right now. Please try again.");
+
+    const mongoErr = new Error('MongoNetworkTimeoutError: connection lost');
+    assert.equal(formatRefreshError(mongoErr), "Couldn't refresh news right now. Please try again.");
+
+    assert.equal(formatRefreshError(null), "Couldn't refresh news right now. Please try again.");
+  });
+
+  test('6g. Raw backend JSON, jobId, or internal error payloads are NEVER rendered', () => {
+    const rawPayloads = [
+      JSON.stringify({ jobId: 'job_1790088986497_1e6ciz', status: 'completed', stats: { articlesFetched: 61 } }),
+      JSON.stringify({ error: { code: 'CONCURRENT_JOB_RUNNING', jobId: 'job_9999' } }),
+      'Error: Ingestion job job_1790088986497_1e6ciz polling timed out.',
+      'Scraper service at https://news-pulse-scraper.onrender.com/run rejected request with HTTP 500',
+    ];
+
+    for (const raw of rawPayloads) {
+      const formatted = formatRefreshError(raw);
+      assert.ok(!formatted.includes('job_'), `Formatted output must not contain jobId: ${formatted}`);
+      assert.ok(!formatted.includes('{'), `Formatted output must not contain JSON: ${formatted}`);
+      assert.ok(!formatted.includes('}'), `Formatted output must not contain JSON: ${formatted}`);
+      assert.ok(!formatted.includes('http'), `Formatted output must not contain internal URLs: ${formatted}`);
+      assert.ok(!formatted.includes('500'), `Formatted output must not contain status codes: ${formatted}`);
+      assert.ok(!formatted.includes('CONCURRENT'), `Formatted output must not contain error codes: ${formatted}`);
+    }
   });
 
   // 7. Relative Time Formatter

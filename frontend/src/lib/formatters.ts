@@ -204,3 +204,53 @@ export function refineClusterLabel(rawLabel: string | null | undefined): string 
   return transformed.join(' ');
 }
 
+/**
+ * Human-readable status messages for the Refresh Data flow.
+ * Guarantees that internal IDs, raw JSON, error codes, and technical payloads
+ * are NEVER rendered to the end user.
+ */
+export function formatRefreshCompletion(stats?: {
+  articlesAdded?: number;
+  duplicatesSkipped?: number;
+  feedsFailed?: number;
+}): string {
+  const added = stats?.articlesAdded ?? 0;
+  const dupes = stats?.duplicatesSkipped ?? 0;
+  const feedsFailed = stats?.feedsFailed ?? 0;
+
+  if (feedsFailed > 0) {
+    if (added > 0) {
+      return `Updated with partial source coverage · ${added} new ${added === 1 ? 'story' : 'stories'}`;
+    }
+    return 'Updated with partial source coverage · No new stories found';
+  }
+
+  if (added > 0) {
+    return `Updated just now · ${added} new ${added === 1 ? 'story' : 'stories'} · ${dupes} duplicates skipped`;
+  }
+
+  return "You're up to date · No new stories found";
+}
+
+export function formatRefreshError(err: any): string {
+  if (!err) {
+    return "Couldn't refresh news right now. Please try again.";
+  }
+
+  const raw = typeof err === 'string' ? err : err?.message || '';
+
+  // Check for 409 concurrent ingestion indicator
+  if (
+    raw.includes('409') ||
+    raw.includes('CONCURRENT_JOB_RUNNING') ||
+    raw.toLowerCase().includes('already in progress') ||
+    raw.toLowerCase().includes('already running')
+  ) {
+    return 'Refresh already in progress…';
+  }
+
+  // Always return user-friendly, polished copy — never expose technical errors or JSON
+  return "Couldn't refresh news right now. Please try again.";
+}
+
+
