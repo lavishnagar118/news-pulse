@@ -114,6 +114,45 @@ export class IngestionJobService {
       },
     };
   }
+
+  /**
+   * Retrieve the most recent completed or latest ingestion job.
+   * Returns null if no jobs exist yet.
+   */
+  async getLatestCompletedJob(): Promise<IngestionJobStatusDto | null> {
+    const collection = getIngestionJobsCollection();
+    let job = await collection.findOne({ status: 'completed' }, { sort: { completedAt: -1 } });
+    if (!job) {
+      job = await collection.findOne({}, { sort: { startedAt: -1 } });
+    }
+
+    if (!job) {
+      return null;
+    }
+
+    return {
+      jobId: job.jobId,
+      status: job.status,
+      startedAt:
+        job.startedAt instanceof Date ? job.startedAt.toISOString() : new Date(job.startedAt).toISOString(),
+      completedAt: job.completedAt
+        ? job.completedAt instanceof Date
+          ? job.completedAt.toISOString()
+          : new Date(job.completedAt).toISOString()
+        : null,
+      error: job.error || null,
+      stats: {
+        articlesFetched: job.articlesFetched ?? 0,
+        articlesAdded: job.articlesAdded ?? 0,
+        duplicatesSkipped: job.duplicatesSkipped ?? 0,
+        extractionFailures: job.extractionFailures ?? 0,
+        feedsAttempted: job.feedsAttempted ?? 0,
+        feedsSucceeded: job.feedsSucceeded ?? 0,
+        feedsFailed: job.feedsFailed ?? 0,
+        clustersUpdated: job.clustersUpdated ?? 0,
+      },
+    };
+  }
 }
 
 export const ingestionJobService = new IngestionJobService();

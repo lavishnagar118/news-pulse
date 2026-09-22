@@ -370,6 +370,45 @@ describe('News Pulse REST API Integration Tests', () => {
     assert.equal(res.body.query, 'election');
   });
 
+  // 15a. Search tests: single keyword
+  test('15a. GET /articles/search?q=technology matches single keyword', async () => {
+    const res = await request(app).get('/articles/search?q=technology');
+    assert.equal(res.status, 200);
+    assert.ok(Array.isArray(res.body.data));
+    assert.equal(res.body.query, 'technology');
+  });
+
+  // 15b. Search tests: multi-word query
+  test('15b. GET /articles/search?q=artificial+intelligence handles multi-word query', async () => {
+    const res = await request(app).get('/articles/search?q=artificial%20intelligence');
+    assert.equal(res.status, 200);
+    assert.ok(Array.isArray(res.body.data));
+    assert.equal(res.body.query, 'artificial intelligence');
+  });
+
+  // 15c. Search tests: empty query
+  test('15c. GET /articles/search with empty query returns 0 results cleanly', async () => {
+    const res = await request(app).get('/articles/search?q=');
+    assert.equal(res.status, 200);
+    assert.equal(res.body.total, 0);
+    assert.deepEqual(res.body.data, []);
+  });
+
+  // 15d. Search tests: special characters
+  test('15d. GET /articles/search handles regex special characters safely', async () => {
+    const res = await request(app).get('/articles/search?q=(test)+[bracket]*?^$');
+    assert.equal(res.status, 200);
+    assert.ok(Array.isArray(res.body.data));
+  });
+
+  // 15e. Search tests: no results query
+  test('15e. GET /articles/search returns empty list for non-existent terms', async () => {
+    const res = await request(app).get('/articles/search?q=xyznonexistentterm987654');
+    assert.equal(res.status, 200);
+    assert.equal(res.body.total, 0);
+    assert.equal(res.body.data.length, 0);
+  });
+
   // 16. GET /categories returns distinct category counts
   test('16. GET /categories returns distinct category counts', async () => {
     const res = await request(app).get('/categories');
@@ -379,5 +418,12 @@ describe('News Pulse REST API Integration Tests', () => {
     assert.ok(res.body.length > 0);
     assert.ok(res.body[0].name);
     assert.ok(typeof res.body[0].count === 'number');
+  });
+
+  // 17. GET /ingest/latest returns latest ingestion status
+  test('17. GET /ingest/latest returns latest ingestion status', async () => {
+    const res = await request(app).get('/ingest/latest');
+    assert.equal(res.status, 200);
+    assert.ok(res.body.jobId || res.body.message);
   });
 });

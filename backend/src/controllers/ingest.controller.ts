@@ -40,6 +40,27 @@ export class IngestController {
       next(error);
     }
   }
+
+  /**
+   * GET /ingest/latest
+   * Returns status and stats for the most recent ingestion job, or 200 with placeholder if none.
+   */
+  async getLatestIngest(
+    _req: Request,
+    res: Response<IngestionJobStatusDto | { message: string }>,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const job = await ingestionJobService.getLatestCompletedJob();
+      if (!job) {
+        res.status(200).json({ message: 'No ingestion runs recorded yet' });
+        return;
+      }
+      res.status(200).json(job);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const ingestController = new IngestController();

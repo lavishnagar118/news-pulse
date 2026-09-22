@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Search, RefreshCw, Menu, X, Activity } from 'lucide-react';
-import { triggerIngestion, pollJobStatus } from '@/lib/api';
+import { triggerIngestion, pollJobStatus, fetchLatestJobStatus } from '@/lib/api';
 
 const CATEGORIES = [
   { name: 'Home', href: '/' },
@@ -33,6 +33,19 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState<string | null>(null);
+  const [lastUpdatedText, setLastUpdatedText] = useState<string | null>(null);
+
+  useEffect(() => {
+    const updateTimestamp = async () => {
+      const job = await fetchLatestJobStatus();
+      if (job?.completedAt) {
+        const d = new Date(job.completedAt);
+        const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+        setLastUpdatedText(`Last synced: ${timeStr}`);
+      }
+    };
+    updateTimestamp();
+  }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,19 +58,33 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
   const handleRefresh = async () => {
     if (isRefreshing) return;
     setIsRefreshing(true);
-    setRefreshMessage('Starting pipeline...');
+    setRefreshMessage('Connecting to feeds...');
 
     try {
       const { jobId } = await triggerIngestion();
-      setRefreshMessage('Ingesting & clustering...');
+      setRefreshMessage('Processing feeds & stories...');
 
-      await pollJobStatus(jobId, (job) => {
+      const completedJob = await pollJobStatus(jobId, (job) => {
         if (job.status === 'running') {
-          setRefreshMessage('Processing feeds & stories...');
+          if (job.stats && job.stats.articlesFetched > 0) {
+            setRefreshMessage('Clustering topics...');
+          } else {
+            setRefreshMessage('Ingesting feeds...');
+          }
         }
       });
 
-      setRefreshMessage('Updated successfully!');
+      const added = completedJob.stats?.articlesAdded ?? 0;
+      const dupes = completedJob.stats?.duplicatesSkipped ?? 0;
+
+      if (added > 0) {
+        setRefreshMessage(`Updated just now · ${added} new ${added === 1 ? 'story' : 'stories'} · ${dupes} skipped`);
+      } else {
+        setRefreshMessage("You're up to date · No new stories found");
+      }
+
+      setLastUpdatedText('Last synced: just now');
+
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('news-pulse-refresh'));
       }
@@ -68,13 +95,13 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
       setTimeout(() => {
         setRefreshMessage(null);
         setIsRefreshing(false);
-      }, 2500);
+      }, 5000);
     } catch (err: any) {
       setRefreshMessage(err.message || 'Refresh failed');
       setTimeout(() => {
         setRefreshMessage(null);
         setIsRefreshing(false);
-      }, 3500);
+      }, 4000);
     }
   };
 
@@ -97,13 +124,22 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
             <span className="hidden md:inline-block font-semibold uppercase tracking-wider text-[11px] text-stone-500">
               Global Edition
             </span>
+            {lastUpdatedText && (
+              <>
+                <span className="hidden lg:inline-block text-stone-300">|</span>
+                <span className="hidden lg:inline-flex items-center gap-1.5 text-[11px] text-stone-500 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  {lastUpdatedText}
+                </span>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
             {/* Live Ingestion Refresh Button */}
             <div className="flex items-center gap-2">
               {refreshMessage && (
-                <span className="text-[11px] text-stone-600 font-medium animate-pulse">
+                <span className="text-[11px] font-medium text-stone-700 bg-stone-100 px-2 py-0.5 rounded border border-stone-200 animate-pulse">
                   {refreshMessage}
                 </span>
               )}

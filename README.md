@@ -5,7 +5,11 @@
 Designed to function as a modern digital newspaper with an embedded intelligence layer:
 > *"News Pulse looks and feels like a digital news publication that features an intelligent topic-clustered timeline."*
 
-**Status**: **Deployment-Ready** (Full deployment configuration manifests prepared for Render and Vercel; live cloud deployment has not yet been executed).
+**Status**: **Live in Production**
+- **Frontend**: [https://news-pulse-brown.vercel.app](https://news-pulse-brown.vercel.app)
+- **Backend API**: [https://news-pulse-api-xyxh.onrender.com](https://news-pulse-api-xyxh.onrender.com)
+- **Database**: Hosted MongoDB Atlas Cluster
+- **Freshness**: Periodically refreshed via automated GitHub Actions cron every 15 minutes (`.github/workflows/freshness.yml`) and user-triggered on-demand refresh.
 
 ---
 
@@ -200,20 +204,50 @@ Audited directly against the active local MongoDB database (`news_pulse`):
 
 ---
 
-## CI/CD Pipeline
+## CI/CD & Automated Freshness
 
-News Pulse includes a GitHub Actions continuous integration workflow configured in [`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml):
-- **Job 1 (Scraper)**: Runs on Ubuntu with Python 3.11, installing dependencies and executing `pytest scraper/tests -v`.
-- **Job 2 (Backend)**: Runs on Ubuntu with Node.js 18, running `npm ci`, `npm test`, and `npm run build`.
-- **Job 3 (Frontend)**: Runs on Ubuntu with Node.js 18, running `npm ci`, `npm test`, `npm run lint`, and `npm run build`.
+News Pulse includes two GitHub Actions automation workflows:
+1. **Continuous Integration ([`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml))**:
+   - **Job 1 (Scraper)**: Runs on Ubuntu with Python 3.11, installing dependencies and executing `pytest scraper/tests -v` (40/40 passed).
+   - **Job 2 (Backend)**: Runs on Ubuntu with Node.js 18, running `npm ci`, `npm test` (22/22 passed), and `npm run build`.
+   - **Job 3 (Frontend)**: Runs on Ubuntu with Node.js 18, running `npm ci`, `npm test` (9/9 passed), `npm run lint`, and `npm run build`.
+2. **Automated Background Freshness ([`.github/workflows/freshness.yml`](file:///.github/workflows/freshness.yml))**:
+   - Runs every 15 minutes on a schedule offset away from the top of the hour (`17,32,47,2 * * * *`).
+   - Supports `workflow_dispatch` for manual on-demand execution.
+   - Securely triggers `POST /ingest/trigger` on the production API and polls `/ingest/status/:jobId`.
+   - Handles `409 Conflict` (concurrency guard) gracefully without failing.
+   - Masks secrets and credentials to prevent log leakage.
+   - Provides **periodically refreshed**, **near-real-time** news coverage while preventing Render free-tier idle spin-down.
 
 ---
 
-## Deployment Configuration (Deployment-Ready)
+## Production Deployment Architecture
 
-> **Note**: The repository includes complete configuration manifests for cloud deployment (`render.yaml` for Render and Next.js settings for Vercel). Live deployment to cloud infrastructure has not yet been executed.
+News Pulse is deployed across the following production topology:
 
-- **Database**: MongoDB Atlas Free Tier (`MONGODB_URI`).
-- **Backend API**: Render Web Service running Node.js (`news-pulse-backend`). Set `SCRAPER_MODE=http`, `SCRAPER_SERVICE_URL=https://news-pulse-scraper.onrender.com`, and `INGESTION_SERVICE_SECRET`.
-- **Scraper Service**: Render Web Service running Python/FastAPI (`news-pulse-scraper`) with command `uvicorn server:app --host 0.0.0.0 --port $PORT`.
-- **Frontend**: Vercel Serverless deployment with `NEXT_PUBLIC_API_URL` pointing to the Render Backend API URL.
+```
+Vercel Next.js Frontend (Edge / SSR)
+         ↓  (HTTPS REST JSON)
+Render Node.js REST API Service (news-pulse-api)
+         ↓  (Authenticated HTTP / Shared Secret)
+Render Python Ingestion & Topic Clustering Service (news-pulse-scraper)
+         ↓  (Mongoose / PyMongo Driver)
+MongoDB Atlas (Hosted Multi-Node Replica Set)
+```
+
+- **Frontend**: [https://news-pulse-brown.vercel.app](https://news-pulse-brown.vercel.app)
+  - Vercel Next.js 14 App Router deployment.
+  - Configured with `NEXT_PUBLIC_API_URL=https://news-pulse-api-xyxh.onrender.com`.
+- **Backend API**: [https://news-pulse-api-xyxh.onrender.com](https://news-pulse-api-xyxh.onrender.com)
+  - Render Web Service running Node.js 18 with Express & TypeScript.
+  - Configured with `NODE_ENV=production`, `MONGODB_URI`, `CORS_ORIGIN=https://news-pulse-brown.vercel.app`.
+  - Dynamic service discovery resolves scraper via MongoDB `service_registry` or `SCRAPER_SERVICE_URL`.
+- **Python Scraper & Clustering Service**:
+  - Render Web Service running Python 3.11 / FastAPI / Uvicorn.
+  - Exposes `POST /run` protected by `INGESTION_SERVICE_SECRET`.
+  - Automatically registers its public runtime URL in MongoDB Atlas on startup.
+- **Database**:
+  - Hosted MongoDB Atlas cluster with collections: `articles`, `clusters`, `ingestion_jobs`, `service_registry`.
+- **Production Freshness Characteristics**:
+  - Updates are **near-real-time** and **periodically refreshed** on a 15-minute cadence.
+  - On the Render Free tier, cold-start delays of 30–50 seconds can occur if instances idle; our automated 15-minute cron ping prevents unnecessary idle spin-downs.

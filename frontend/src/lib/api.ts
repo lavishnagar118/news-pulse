@@ -153,6 +153,22 @@ export async function pollJobStatus(
 }
 
 /**
+ * Fetch status of the most recent completed or recorded ingestion job.
+ * Endpoint: GET /ingest/latest
+ */
+export async function fetchLatestJobStatus(): Promise<IngestionJob | null> {
+  try {
+    const res = await fetch(`${getApiBaseUrl()}/ingest/latest`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data || !data.jobId) return null;
+    return data as IngestionJob;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Fetch paginated list of article summaries for news feeds and categories.
  * Endpoint: GET /articles
  */

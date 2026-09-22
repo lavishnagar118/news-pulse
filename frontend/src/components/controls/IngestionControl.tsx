@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { RefreshCw, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { triggerIngestion, pollJobStatus } from '@/lib/api';
+import React, { useState, useEffect } from 'react';
+import { RefreshCw, CheckCircle, AlertCircle, Loader2, Clock } from 'lucide-react';
+import { triggerIngestion, pollJobStatus, fetchLatestJobStatus } from '@/lib/api';
 import { IngestionJob } from '@/lib/types';
 
 interface IngestionControlProps {
@@ -16,6 +16,19 @@ export const IngestionControl: React.FC<IngestionControlProps> = ({
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [lastSyncText, setLastSyncText] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadLastSync = async () => {
+      const job = await fetchLatestJobStatus();
+      if (job?.completedAt) {
+        const d = new Date(job.completedAt);
+        const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+        setLastSyncText(`Last synced at ${timeStr}`);
+      }
+    };
+    loadLastSync();
+  }, []);
 
   const handleRefresh = async () => {
     if (isRefreshing || isGlobalLoading) return;
@@ -23,17 +36,17 @@ export const IngestionControl: React.FC<IngestionControlProps> = ({
     setIsRefreshing(true);
     setErrorMessage(null);
     setSuccessMessage(null);
-    setStatusMessage('Triggering ingestion pipeline...');
+    setStatusMessage('Connecting to feeds...');
 
     try {
       // 1. POST /ingest/trigger
       const triggerRes = await triggerIngestion();
       const jobId = triggerRes.jobId;
 
-      setStatusMessage('Ingestion job queued. Updating feeds...');
+      setStatusMessage('Ingesting & clustering stories...');
 
       // 2. Poll status
-      await pollJobStatus(
+      const completedJob = await pollJobStatus(
         jobId,
         (job: IngestionJob) => {
           if (job.status === 'running') {
@@ -48,17 +61,25 @@ export const IngestionControl: React.FC<IngestionControlProps> = ({
         90000
       );
 
-      // 3. Completed: reload timeline and show success
+      // 3. Completed: reload timeline and show real statistics
       setStatusMessage('Refreshing timeline data...');
       await onRefreshCompleted();
 
-      setSuccessMessage('Data refreshed successfully');
+      const added = completedJob.stats?.articlesAdded ?? 0;
+      const dupes = completedJob.stats?.duplicatesSkipped ?? 0;
+
+      if (added > 0) {
+        setSuccessMessage(`Updated just now · ${added} new ${added === 1 ? 'story' : 'stories'} · ${dupes} duplicates skipped`);
+      } else {
+        setSuccessMessage("You're up to date · No new stories found");
+      }
+      setLastSyncText('Last synced: just now');
       setStatusMessage(null);
 
-      // Auto-clear success notification after 5s
+      // Auto-clear success notification after 6s
       setTimeout(() => {
         setSuccessMessage(null);
-      }, 5000);
+      }, 6000);
     } catch (err: any) {
       setErrorMessage(err?.message || 'Failed to complete ingestion pipeline.');
       setStatusMessage(null);
@@ -108,6 +129,14 @@ export const IngestionControl: React.FC<IngestionControlProps> = ({
             Dismiss
           </button>
         </div>
+      )}
+
+      {/* Latest Sync Timestamp */}
+      {lastSyncText && !isRefreshing && !successMessage && !errorMessage && (
+        <span className="inline-flex items-center gap-1 text-[11px] text-stone-500 font-medium">
+          <Clock className="w-3 h-3 text-stone-400" />
+          {lastSyncText}
+        </span>
       )}
     </div>
   );

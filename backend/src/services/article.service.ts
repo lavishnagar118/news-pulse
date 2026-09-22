@@ -239,7 +239,9 @@ export class ArticleService {
   }
 
   /**
-   * Search articles across title, summary, source, and category.
+   * Search articles across title, summary, content, source, and category.
+   * Supports case-insensitive single/multi-word and quoted-phrase matching,
+   * with title weighting over summary/content and word-boundary safety for acronyms.
    */
   async searchArticles(query: string, options: SearchOptions = {}): Promise<ArticleSearchResponseDto> {
     const trimmedQuery = (query || '').trim();
@@ -255,27 +257,81 @@ export class ArticleService {
 
     const articlesCollection = getArticlesCollection();
     const clustersCollection = getClustersCollection();
-    const regex = new RegExp(escapeRegex(trimmedQuery), 'i');
 
+    // Check if query is wrapped in quotes for exact phrase matching
+    const isQuoted =
+      (trimmedQuery.startsWith('"') && trimmedQuery.endsWith('"') && trimmedQuery.length > 2) ||
+      (trimmedQuery.startsWith("'") && trimmedQuery.endsWith("'") && trimmedQuery.length > 2);
+    const unquoted = isQuoted ? trimmedQuery.slice(1, -1).trim() : trimmedQuery;
+
+    // Build token regex: for short tokens (<= 3 chars, e.g. "AI", "US"), enforce word boundaries
+    const buildTermRegex = (term: string) => {
+      const escaped = escapeRegex(term);
+      if (term.length <= 3) {
+        return new RegExp(`\\b${escaped}\\b`, 'i');
+      }
+      return new RegExp(escaped, 'i');
+    };
+
+    // 1. Exact phrase regex (used for matching clusters & phrase boost)
+    const exactRegex = buildTermRegex(unquoted);
+
+    // 2. Identify matching clusters by exact or token match
     const matchingClusters = await clustersCollection
-      .find({ label: { $regex: regex } }, { projection: { _id: 1 } })
+      .find({ label: { $regex: exactRegex } }, { projection: { _id: 1 } })
       .limit(30)
       .toArray();
     const matchingClusterIds = matchingClusters.map((c) => c._id.toString());
 
-    const orClauses: Filter<ArticleDoc>[] = [
-      { title: { $regex: regex } },
-      { summary: { $regex: regex } },
-      { source: { $regex: regex } },
-      { category: { $regex: regex } },
-    ];
-    if (matchingClusterIds.length > 0) {
-      orClauses.push({ clusterId: { $in: matchingClusterIds } });
+    // 3. Tokenize query for multi-word natural queries
+    const tokens = unquoted.split(/\s+/).filter((t) => t.length > 0);
+
+    let searchFilter: Filter<ArticleDoc>;
+
+    if (isQuoted || tokens.length <= 1) {
+      // Single term or quoted phrase search
+      const orClauses: Filter<ArticleDoc>[] = [
+        { title: { $regex: exactRegex } },
+        { summary: { $regex: exactRegex } },
+        { content: { $regex: exactRegex } },
+        { source: { $regex: exactRegex } },
+        { category: { $regex: exactRegex } },
+      ];
+      if (matchingClusterIds.length > 0) {
+        orClauses.push({ clusterId: { $in: matchingClusterIds } });
+      }
+      searchFilter = { $or: orClauses };
+    } else {
+      // Meaningful multi-term query: match articles where tokens appear across fields,
+      // or where the full exact phrase appears.
+      const perTokenConditions: Filter<ArticleDoc>[] = tokens.map((token) => {
+        const tokenRegex = buildTermRegex(token);
+        return {
+          $or: [
+            { title: { $regex: tokenRegex } },
+            { summary: { $regex: tokenRegex } },
+            { content: { $regex: tokenRegex } },
+            { source: { $regex: tokenRegex } },
+            { category: { $regex: tokenRegex } },
+          ],
+        };
+      });
+
+      const multiTermAnd: Filter<ArticleDoc> = { $and: perTokenConditions };
+
+      const exactOr: Filter<ArticleDoc> = {
+        $or: [
+          { title: { $regex: exactRegex } },
+          { summary: { $regex: exactRegex } },
+          { content: { $regex: exactRegex } },
+          ...(matchingClusterIds.length > 0 ? [{ clusterId: { $in: matchingClusterIds } }] : []),
+        ],
+      };
+
+      searchFilter = { $or: [exactOr, multiTermAnd] };
     }
 
-    const filter: Filter<ArticleDoc> = {
-      $or: orClauses,
-    };
+    const filter: Filter<ArticleDoc> = { ...searchFilter };
 
     if (options.category && options.category.toLowerCase() !== 'all') {
       filter.category = { $regex: new RegExp(`^${escapeRegex(options.category)}$`, 'i') };
@@ -288,6 +344,7 @@ export class ArticleService {
     const limit = Math.min(Math.max(Number(options.limit) || 20, 1), 100);
     const offset = Math.max(Number(options.offset) || 0, 0);
 
+    // Retrieve matching candidates
     const [total, docs] = await Promise.all([
       articlesCollection.countDocuments(filter),
       articlesCollection
@@ -304,13 +361,56 @@ export class ArticleService {
             clusterId: 1,
           },
         })
-        .sort({ publishedAt: -1 })
-        .skip(offset)
-        .limit(limit)
         .toArray(),
     ]);
 
-    const articles: ArticleSummaryDto[] = docs.map((doc) => ({
+    // Compute relevance score: title weighted higher than summary/content
+    const scored = docs.map((doc) => {
+      let score = 0;
+      const titleLower = (doc.title || '').toLowerCase();
+      const summaryLower = (doc.summary || '').toLowerCase();
+      const unquotedLower = unquoted.toLowerCase();
+
+      // Exact phrase match in title = highest relevance
+      if (titleLower.includes(unquotedLower)) {
+        score += 30;
+      }
+      // Exact phrase match in summary
+      if (summaryLower.includes(unquotedLower)) {
+        score += 15;
+      }
+
+      // Individual token matches
+      for (const t of tokens) {
+        const term = t.toLowerCase();
+        if (titleLower.includes(term)) {
+          score += 10;
+        }
+        if (summaryLower.includes(term)) {
+          score += 4;
+        }
+      }
+
+      // Bonus for source/category match
+      if ((doc.source || '').toLowerCase().includes(unquotedLower)) score += 5;
+      if ((doc.category || '').toLowerCase().includes(unquotedLower)) score += 5;
+
+      return { doc, score };
+    });
+
+    // Sort by relevance score descending, then by publishedAt descending
+    scored.sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      const timeA = a.doc.publishedAt instanceof Date ? a.doc.publishedAt.getTime() : new Date(a.doc.publishedAt).getTime();
+      const timeB = b.doc.publishedAt instanceof Date ? b.doc.publishedAt.getTime() : new Date(b.doc.publishedAt).getTime();
+      return timeB - timeA;
+    });
+
+    const paginated = scored.slice(offset, offset + limit).map((s) => s.doc);
+
+    const articles: ArticleSummaryDto[] = paginated.map((doc) => ({
       id: doc._id!.toString(),
       title: doc.title,
       summary: doc.summary || null,

@@ -4,6 +4,9 @@ import logging
 from typing import Any, Dict, List, Optional
 import feedparser
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
+
 try:
     from config import Config
     from feeds import RSSFeedConfig
@@ -20,6 +23,18 @@ class RSSFeedParser:
     def __init__(self, user_agent: Optional[str] = None, timeout: Optional[int] = None):
         self.user_agent = user_agent or Config.SCRAPER_USER_AGENT
         self.timeout = timeout or Config.REQUEST_TIMEOUT
+        
+        # Configure resilient HTTP session with retry logic
+        self.session = requests.Session()
+        retries = Retry(
+            total=2,
+            backoff_factor=0.5,
+            status_forcelist=[500, 502, 503, 504],
+            raise_on_status=False,
+        )
+        adapter = HTTPAdapter(max_retries=retries)
+        self.session.mount("http://", adapter)
+        self.session.mount("https://", adapter)
 
     def fetch_feed(self, feed: RSSFeedConfig) -> List[Dict[str, Any]]:
         """Fetch and parse feed entries from a given RSSFeedConfig.
@@ -37,12 +52,14 @@ class RSSFeedParser:
         headers = {
             "User-Agent": self.user_agent,
             "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml, */*",
+            "Cache-Control": "max-age=0, no-cache",
+            "Pragma": "no-cache",
         }
         if feed.headers:
             headers.update(feed.headers)
 
         try:
-            response = requests.get(
+            response = self.session.get(
                 feed.url,
                 headers=headers,
                 timeout=self.timeout,

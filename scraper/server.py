@@ -2,15 +2,19 @@
 
 import hmac
 import logging
+import os
 from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import FastAPI, BackgroundTasks, Header, HTTPException, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from config import Config
 from database.connection import DatabaseManager
 from main import IngestionPipeline
+
+from contextlib import asynccontextmanager
 
 # Configure logger (never logs authentication secrets)
 logging.basicConfig(
@@ -19,13 +23,39 @@ logging.basicConfig(
 )
 logger = logging.getLogger("news-pulse.scraper.server")
 
+db_manager = DatabaseManager()
+
+
+def register_service_url():
+    """Register public external URL in MongoDB service_registry so the API can reach this scraper."""
+    external_url = os.environ.get("RENDER_EXTERNAL_URL")
+    if external_url:
+        try:
+            db = db_manager.connect()
+            db.get_collection("service_registry").update_one(
+                {"_id": "news-pulse-scraper"},
+                {"$set": {"url": external_url.strip().rstrip("/"), "updatedAt": datetime.now(timezone.utc)}},
+                upsert=True,
+            )
+            logger.info("Registered scraper service external URL in MongoDB: %s", external_url)
+        except Exception as err:
+            logger.debug("Could not record service external URL in MongoDB: %s", err)
+
+
+@asynccontextmanager
+async def lifespan(app_instance: FastAPI):
+    """Service lifespan handler: registers service URL on startup."""
+    logger.info("News Pulse Scraper service initializing...")
+    register_service_url()
+    yield
+
+
 app = FastAPI(
     title="News Pulse Ingestion & Clustering Service",
     description="Asynchronous cloud worker service triggering RSS ingestion, normalization, and deterministic TF-IDF clustering.",
     version="1.0.0",
+    lifespan=lifespan,
 )
-
-db_manager = DatabaseManager()
 
 
 class IngestRunRequest(BaseModel):
@@ -78,6 +108,8 @@ def health_check():
         db = db_manager.connect()
         ping_res = db.command("ping")
         db_connected = ping_res.get("ok", 0) == 1
+        if db_connected:
+            register_service_url()
     except Exception as err:
         logger.warning("Health check MongoDB ping failed: %s", err)
         db_connected = False
@@ -90,9 +122,9 @@ def health_check():
     }
 
     if not db_connected:
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=res_body,
+            content=res_body,
         )
 
     return res_body
