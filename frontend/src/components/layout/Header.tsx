@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Search, RefreshCw, Menu, X, Activity } from 'lucide-react';
 import { triggerIngestion, pollJobStatus, fetchLatestJobStatus } from '@/lib/api';
+import { useScrollState } from '@/hooks/useScrollState';
 
 const CATEGORIES = [
   { name: 'Home', href: '/' },
@@ -34,25 +35,9 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState<string | null>(null);
   const [lastUpdatedText, setLastUpdatedText] = useState<string | null>(null);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const { isScrolled } = useScrollState({ thresholdDown: 48, thresholdUp: 16 });
 
   const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // Scroll detection with hysteresis to prevent bouncing/jittering
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY || document.documentElement.scrollTop;
-      if (!isScrolled && scrollY > 48) {
-        setIsScrolled(true);
-      } else if (isScrolled && scrollY <= 16) {
-        setIsScrolled(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isScrolled]);
 
   // Close menus on route change
   useEffect(() => {
