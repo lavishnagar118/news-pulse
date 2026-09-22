@@ -298,6 +298,193 @@ describe('News Pulse REST API Integration Tests', () => {
     }
   });
 
+  // 11a. Warm scraper succeeds immediately on first attempt
+  test('11a. HttpIngestionRunner succeeds immediately when scraper is warm', async () => {
+    const { HttpIngestionRunner } = await import('../src/services/ingestion/http.runner');
+    const { config } = await import('../src/config');
+
+    const originalUrl = config.scraperServiceUrl;
+    const originalFetch = global.fetch;
+    try {
+      config.scraperServiceUrl = 'https://mock-scraper.onrender.com';
+      let callCount = 0;
+
+      global.fetch = async () => {
+        callCount++;
+        return new Response(JSON.stringify({ jobId: 'warm-job', status: 'accepted' }), {
+          status: 202,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      };
+
+      const runner = new HttpIngestionRunner({ retryIntervalMs: 10, maxDeadlineMs: 1000 });
+      await runner.trigger('warm-job');
+
+      assert.equal(callCount, 1, 'Warm scraper must succeed in exactly 1 call without retrying');
+    } finally {
+      global.fetch = originalFetch;
+      config.scraperServiceUrl = originalUrl;
+    }
+  });
+
+  // 11b. First 502 recovers on second attempt
+  test('11b. HttpIngestionRunner retries and succeeds after initial 502 Bad Gateway', async () => {
+    const { HttpIngestionRunner } = await import('../src/services/ingestion/http.runner');
+    const { config } = await import('../src/config');
+
+    const originalUrl = config.scraperServiceUrl;
+    const originalFetch = global.fetch;
+    try {
+      config.scraperServiceUrl = 'https://mock-scraper.onrender.com';
+      let callCount = 0;
+
+      global.fetch = async () => {
+        callCount++;
+        if (callCount === 1) {
+          return new Response('<html>502 Bad Gateway</html>', { status: 502 });
+        }
+        return new Response(JSON.stringify({ jobId: 'cold-job', status: 'accepted' }), {
+          status: 202,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      };
+
+      const runner = new HttpIngestionRunner({ retryIntervalMs: 15, maxDeadlineMs: 1000 });
+      await runner.trigger('cold-job');
+
+      assert.equal(callCount, 2, 'Should succeed on attempt 2 after recovering from 502');
+    } finally {
+      global.fetch = originalFetch;
+      config.scraperServiceUrl = originalUrl;
+    }
+  });
+
+  // 11c. Repeated 502/503/504 cold-start sequence retries until success
+  test('11c. HttpIngestionRunner retries through 502, 503, and 504 sequence until ready', async () => {
+    const { HttpIngestionRunner } = await import('../src/services/ingestion/http.runner');
+    const { config } = await import('../src/config');
+
+    const originalUrl = config.scraperServiceUrl;
+    const originalFetch = global.fetch;
+    try {
+      config.scraperServiceUrl = 'https://mock-scraper.onrender.com';
+      let callCount = 0;
+
+      global.fetch = async () => {
+        callCount++;
+        if (callCount === 1) return new Response('502 Bad Gateway', { status: 502 });
+        if (callCount === 2) return new Response('503 Service Unavailable', { status: 503 });
+        if (callCount === 3) return new Response('504 Gateway Timeout', { status: 504 });
+        return new Response(JSON.stringify({ jobId: 'cold-seq-job', status: 'accepted' }), {
+          status: 202,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      };
+
+      const runner = new HttpIngestionRunner({ retryIntervalMs: 15, maxDeadlineMs: 2000 });
+      await runner.trigger('cold-seq-job');
+
+      assert.equal(callCount, 4, 'Should retry through 502, 503, 504 and succeed on attempt 4');
+    } finally {
+      global.fetch = originalFetch;
+      config.scraperServiceUrl = originalUrl;
+    }
+  });
+
+  // 11d. Transient connection reset retries until success
+  test('11d. HttpIngestionRunner retries through transient connection failure (ECONNRESET/socket hangup)', async () => {
+    const { HttpIngestionRunner } = await import('../src/services/ingestion/http.runner');
+    const { config } = await import('../src/config');
+
+    const originalUrl = config.scraperServiceUrl;
+    const originalFetch = global.fetch;
+    try {
+      config.scraperServiceUrl = 'https://mock-scraper.onrender.com';
+      let callCount = 0;
+
+      global.fetch = async () => {
+        callCount++;
+        if (callCount === 1) {
+          throw new TypeError('fetch failed: connection reset by peer (ECONNRESET)');
+        }
+        return new Response(JSON.stringify({ jobId: 'network-retry-job', status: 'accepted' }), {
+          status: 202,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      };
+
+      const runner = new HttpIngestionRunner({ retryIntervalMs: 15, maxDeadlineMs: 1000 });
+      await runner.trigger('network-retry-job');
+
+      assert.equal(callCount, 2, 'Should retry after connection error and succeed');
+    } finally {
+      global.fetch = originalFetch;
+      config.scraperServiceUrl = originalUrl;
+    }
+  });
+
+  // 11e. Bounded deadline exceeded produces controlled sanitized failure
+  test('11e. HttpIngestionRunner fails with clean sanitized error when deadline is exceeded', async () => {
+    const { HttpIngestionRunner } = await import('../src/services/ingestion/http.runner');
+    const { config } = await import('../src/config');
+
+    const originalUrl = config.scraperServiceUrl;
+    const originalFetch = global.fetch;
+    try {
+      config.scraperServiceUrl = 'https://mock-scraper.onrender.com';
+
+      global.fetch = async () => {
+        return new Response('<html>Render 502 Bad Gateway with stack trace</html>', { status: 502 });
+      };
+
+      const runner = new HttpIngestionRunner({ retryIntervalMs: 20, maxDeadlineMs: 70 });
+      await assert.rejects(
+        async () => runner.trigger('stuck-job'),
+        (err: Error) => {
+          assert.match(err.message, /did not become ready within the cold-start window/);
+          assert.doesNotMatch(err.message, /<html>/);
+          assert.doesNotMatch(err.message, /Render/);
+          return true;
+        }
+      );
+    } finally {
+      global.fetch = originalFetch;
+      config.scraperServiceUrl = originalUrl;
+    }
+  });
+
+  // 11f. Permanent 401/4xx fails immediately without wasteful retries
+  test('11f. HttpIngestionRunner rejects immediately on permanent 4xx without retrying', async () => {
+    const { HttpIngestionRunner } = await import('../src/services/ingestion/http.runner');
+    const { config } = await import('../src/config');
+
+    const originalUrl = config.scraperServiceUrl;
+    const originalFetch = global.fetch;
+    try {
+      config.scraperServiceUrl = 'https://mock-scraper.onrender.com';
+      let callCount = 0;
+
+      global.fetch = async () => {
+        callCount++;
+        return new Response(JSON.stringify({ detail: 'Unauthorized' }), { status: 401 });
+      };
+
+      const runner = new HttpIngestionRunner({ retryIntervalMs: 20, maxDeadlineMs: 1000 });
+      await assert.rejects(
+        async () => runner.trigger('unauth-job'),
+        (err: Error) => {
+          assert.match(err.message, /authentication or configuration error \(HTTP 401\)/);
+          return true;
+        }
+      );
+
+      assert.equal(callCount, 1, 'Permanent 401 must fail on first attempt without retrying');
+    } finally {
+      global.fetch = originalFetch;
+      config.scraperServiceUrl = originalUrl;
+    }
+  });
+
   // 12. HttpIngestionRunner throws if SCRAPER_SERVICE_URL is missing
   test('12. HttpIngestionRunner throws error if SCRAPER_SERVICE_URL is missing', async () => {
     const { HttpIngestionRunner } = await import('../src/services/ingestion/http.runner');

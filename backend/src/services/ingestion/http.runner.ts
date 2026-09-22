@@ -2,12 +2,29 @@ import { IIngestionRunner } from './ingestion.interface';
 import { config } from '../../config';
 import { getDb } from '../../db';
 
+export interface HttpIngestionRunnerOptions {
+  retryIntervalMs?: number;
+  maxDeadlineMs?: number;
+  perRequestTimeoutMs?: number;
+}
+
 /**
  * Cloud deployment runner: invokes an external Python ingestion service over HTTP.
  * Dynamically resolves scraper public URL from MongoDB service_registry or config,
- * supports Render cold-start spin-up times, and attaches shared secret authentication.
+ * reliably tolerates Render cold-start spin-up times via bounded retries, stops
+ * immediately on permanent 4xx errors, and never leaks raw infrastructure HTML or secrets.
  */
 export class HttpIngestionRunner implements IIngestionRunner {
+  private readonly retryIntervalMs: number;
+  private readonly maxDeadlineMs: number;
+  private readonly perRequestTimeoutMs: number;
+
+  constructor(options?: HttpIngestionRunnerOptions) {
+    this.retryIntervalMs = options?.retryIntervalMs ?? 3500;
+    this.maxDeadlineMs = options?.maxDeadlineMs ?? 70000;
+    this.perRequestTimeoutMs = options?.perRequestTimeoutMs ?? 15000;
+  }
+
   private async resolveBaseUrl(): Promise<string> {
     // 1. Check if MongoDB service_registry has the scraper service's live public URL
     try {
@@ -48,46 +65,62 @@ export class HttpIngestionRunner implements IIngestionRunner {
       headers['Authorization'] = `Bearer ${config.ingestionServiceSecret}`;
     }
 
-    // Attempt request with 90-second timeout to accommodate cloud cold starts
-    let res: Response | null = null;
-    let lastError: any = null;
+    const startTime = Date.now();
+    const deadline = startTime + this.maxDeadlineMs;
+    let lastStatusCode: number | null = null;
+    let lastError: Error | null = null;
 
-    for (let attempt = 1; attempt <= 2; attempt++) {
+    while (Date.now() < deadline) {
       try {
-        res = await fetch(targetUrl, {
+        const remainingTime = deadline - Date.now();
+        const requestTimeout = Math.min(this.perRequestTimeoutMs, Math.max(remainingTime, 1000));
+
+        const res = await fetch(targetUrl, {
           method: 'POST',
           headers,
           body: JSON.stringify({ jobId }),
-          signal: AbortSignal.timeout(90000),
+          signal: AbortSignal.timeout(requestTimeout),
         });
 
-        // If service is temporarily waking up (502/503), wait and retry once
-        if ((res.status === 502 || res.status === 503) && attempt === 1) {
-          await new Promise((r) => setTimeout(r, 4000));
-          continue;
+        // 1. Warm service fast path (HTTP 200..299, e.g. 202 Accepted)
+        if (res.status >= 200 && res.status < 300) {
+          return;
         }
 
-        break;
+        lastStatusCode = res.status;
+
+        // 2. Permanent client error: do NOT retry on 4xx (auth failures, bad requests)
+        if (res.status >= 400 && res.status < 500) {
+          throw new Error(
+            `Scraper service authentication or configuration error (HTTP ${res.status}).`
+          );
+        }
+
+        // 3. Transient cold-start status codes: 502, 503, 504
+        lastError = new Error(`Scraper service waking up (HTTP ${res.status}).`);
       } catch (err: any) {
-        lastError = err;
-        if (attempt === 1) {
-          await new Promise((r) => setTimeout(r, 3000));
-          continue;
+        // If permanent 4xx error was thrown above, rethrow immediately
+        if (err.message && err.message.includes('Scraper service authentication or configuration error')) {
+          throw err;
         }
+
+        // Network or connection failure (ECONNRESET, ETIMEDOUT, socket hangup, abort)
+        lastError = err;
       }
+
+      // If another retry cannot fit before deadline, break out
+      if (Date.now() + this.retryIntervalMs >= deadline) {
+        break;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, this.retryIntervalMs));
     }
 
-    if (!res) {
-      const cause = lastError?.cause ? ` (${lastError.cause.message || lastError.cause})` : '';
-      throw new Error(`Failed to reach scraper service at ${targetUrl}: ${lastError?.message || 'Network failure'}${cause}`);
-    }
-
-    if (!res.ok) {
-      const errorText = await res.text().catch(() => '');
-      throw new Error(
-        `Scraper service at ${targetUrl} rejected request with HTTP ${res.status}: ${errorText || res.statusText}`
-      );
-    }
+    // Bounded deadline exhausted: fail cleanly with sanitized operational error
+    const statusInfo = lastStatusCode ? ` (last HTTP ${lastStatusCode})` : '';
+    throw new Error(
+      `Scraper service did not become ready within the cold-start window${statusInfo}.`
+    );
   }
 }
 
