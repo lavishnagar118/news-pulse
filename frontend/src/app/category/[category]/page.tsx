@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Sparkles, Layers } from 'lucide-react';
 import { Article, TimelineItem } from '@/lib/types';
-import { fetchArticles, fetchTimeline, fetchBootstrapData } from '@/lib/api';
+import { fetchArticles, fetchTimeline } from '@/lib/api';
 import { ArticleCard } from '@/components/news/ArticleCard';
 import { ClusterDrawer } from '@/components/cluster/ClusterDrawer';
 import { refineClusterLabel } from '@/lib/formatters';
@@ -22,8 +22,8 @@ export default function CategoryPage() {
   const [selectedSource, setSelectedSource] = useState<string>('All');
   const [selectedClusterId, setSelectedClusterId] = useState<string | null>(null);
 
-  const loadCategoryData = useCallback((showSkeleton = false) => {
-    if (showSkeleton) {
+  const loadCategoryData = useCallback((isInitial = false) => {
+    if (isInitial) {
       setIsLoading(true);
     }
     Promise.all([
@@ -44,42 +44,20 @@ export default function CategoryPage() {
         if (timelineRes.data) {
           setClusters(timelineRes.data);
         }
-        setIsLoading(false);
+        if (isInitial) setIsLoading(false);
       })
       .catch(() => {
-        // Keep existing articles on network error
-        setIsLoading(false);
+        if (isInitial) {
+          setArticles([]);
+          setTotal(0);
+          setIsLoading(false);
+        }
       });
   }, [category, selectedSource]);
 
   useEffect(() => {
-    let isSubscribed = true;
-
-    // Fast-path: immediately hydrate category from bootstrap snapshot
-    fetchBootstrapData().then((bootstrap) => {
-      if (!isSubscribed || !bootstrap?.articles) return;
-      const matching = bootstrap.articles.filter((a) => {
-        const matchesCat = a.category.toLowerCase() === category.toLowerCase();
-        const matchesSrc = selectedSource === 'All' || a.source === selectedSource;
-        return matchesCat && matchesSrc;
-      });
-      if (matching.length > 0) {
-        setArticles((prev) => (prev.length === 0 ? matching : prev));
-        setTotal((prev) => (prev === 0 ? matching.length : prev));
-        setIsLoading(false);
-      }
-      if (bootstrap.timeline?.data) {
-        setClusters((prev) => (prev.length === 0 ? bootstrap.timeline.data : prev));
-      }
-    });
-
-    // Background live API revalidation
-    loadCategoryData(false);
-
-    return () => {
-      isSubscribed = false;
-    };
-  }, [category, selectedSource, loadCategoryData]);
+    loadCategoryData(true);
+  }, [loadCategoryData]);
 
   useEffect(() => {
     const handleRefresh = () => {

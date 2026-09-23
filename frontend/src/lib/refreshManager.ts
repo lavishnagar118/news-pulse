@@ -1,5 +1,5 @@
 import { IngestionJob, IngestionJobStats } from './types';
-import { triggerIngestion, fetchJobStatus, fetchLatestJobStatus, fetchBootstrapData } from './api';
+import { triggerIngestion, fetchJobStatus, fetchLatestJobStatus } from './api';
 import { formatRefreshCompletion, formatRefreshError } from './formatters';
 
 export interface RefreshState {
@@ -74,20 +74,6 @@ export class RefreshManager {
     }
   };
 
-  public setSyncTimestamp = (isoStringOrDate: string | Date): void => {
-    try {
-      const d = typeof isoStringOrDate === 'string' ? new Date(isoStringOrDate) : isoStringOrDate;
-      if (!isNaN(d.getTime())) {
-        const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
-        this.updateState({
-          lastSyncText: `Last synced: ${timeStr}`,
-        });
-      }
-    } catch {
-      // Ignore timestamp parsing errors
-    }
-  };
-
   public setPollIntervalForTesting(ms: number): void {
     this.pollIntervalMs = ms;
   }
@@ -142,20 +128,7 @@ export class RefreshManager {
     if (typeof window === 'undefined') return;
 
     try {
-      // 1. Instant accurate "Last synced" from bootstrap snapshot
-      try {
-        const bootstrap = await fetchBootstrapData();
-        if (bootstrap && !this.state.lastSyncText) {
-          const syncTimestamp = bootstrap.latestSync?.completedAt || bootstrap.generatedAt;
-          if (syncTimestamp) {
-            this.setSyncTimestamp(syncTimestamp);
-          }
-        }
-      } catch {
-        // Ignore bootstrap load errors
-      }
-
-      // 2. Check sessionStorage for active job
+      // 1. Check sessionStorage for active job
       let activeJobId: string | null = null;
       try {
         activeJobId = sessionStorage.getItem(STORAGE_KEY);

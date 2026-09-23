@@ -4,7 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Search, Sparkles, X, Activity } from 'lucide-react';
 import { TimelineItem } from '@/lib/types';
-import { fetchTimeline, fetchBootstrapData } from '@/lib/api';
+import { fetchTimeline } from '@/lib/api';
 import { TimelineView } from '@/components/timeline/TimelineView';
 import { SourceFilter } from '@/components/filters/SourceFilter';
 import { ClusterDrawer } from '@/components/cluster/ClusterDrawer';
@@ -18,8 +18,8 @@ export default function TimelinePage() {
   const [selectedClusterId, setSelectedClusterId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadTimeline = (showSkeleton = false) => {
-    if (showSkeleton) {
+  const loadTimeline = (isInitial = false) => {
+    if (isInitial) {
       setIsLoading(true);
     }
     fetchTimeline()
@@ -30,33 +30,19 @@ export default function TimelinePage() {
         const s = res.sources || ['BBC News', 'NPR News', 'Al Jazeera'];
         setSources(s);
         setSelectedSources((prev) => (prev.length === 0 ? s : prev));
-        setIsLoading(false);
+        if (isInitial) {
+          setIsLoading(false);
+        }
       })
       .catch(() => {
-        // Keep existing clusters on network error
-        setIsLoading(false);
+        if (isInitial) {
+          setIsLoading(false);
+        }
       });
   };
 
   useEffect(() => {
-    let isSubscribed = true;
-
-    // Fast-path: immediately hydrate from bootstrap snapshot
-    fetchBootstrapData().then((bootstrap) => {
-      if (!isSubscribed || !bootstrap?.timeline?.data) return;
-      setClusters((prev) => (prev.length === 0 ? bootstrap.timeline.data : prev));
-      const s = bootstrap.timeline.sources || ['BBC News', 'NPR News', 'Al Jazeera'];
-      setSources((prev) => (prev.length === 0 ? s : prev));
-      setSelectedSources((prev) => (prev.length === 0 ? s : prev));
-      setIsLoading(false);
-    });
-
-    // Background revalidation
-    loadTimeline(false);
-
-    return () => {
-      isSubscribed = false;
-    };
+    loadTimeline(true);
   }, []);
 
   useEffect(() => {

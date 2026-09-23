@@ -108,11 +108,3 @@ export interface TimelineFilters {
   startDate?: string;
   endDate?: string;
 }
-
-export interface BootstrapData {
-  generatedAt: string;
-  latestSync: IngestionJob | null;
-  articles: Article[];
-  totalArticles: number;
-  timeline: TimelineResponse;
-}

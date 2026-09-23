@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Article } from '@/lib/types';
-import { fetchArticles, fetchBootstrapData } from '@/lib/api';
+import { fetchArticles } from '@/lib/api';
 import { ArticleCard } from '@/components/news/ArticleCard';
 
 export default function LatestPage() {
@@ -14,8 +14,8 @@ export default function LatestPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSource, setSelectedSource] = useState<string>('All');
 
-  const loadArticles = useCallback((showSkeleton = false) => {
-    if (showSkeleton) {
+  const loadArticles = useCallback((isInitial = false) => {
+    if (isInitial) {
       setIsLoading(true);
     }
     fetchArticles({
@@ -27,36 +27,19 @@ export default function LatestPage() {
           setArticles(res.data);
           setTotal(res.total);
         }
-        setIsLoading(false);
+        if (isInitial) setIsLoading(false);
       })
       .catch(() => {
-        // Keep existing displayed dataset on network error
-        setIsLoading(false);
+        if (isInitial) {
+          setArticles([]);
+          setIsLoading(false);
+        }
       });
   }, [selectedSource, limit]);
 
   useEffect(() => {
-    let isSubscribed = true;
-
-    // Fast-path: immediately hydrate from bootstrap snapshot
-    fetchBootstrapData().then((bootstrap) => {
-      if (!isSubscribed || !bootstrap?.articles) return;
-      const filtered =
-        selectedSource !== 'All'
-          ? bootstrap.articles.filter((a) => a.source === selectedSource)
-          : bootstrap.articles;
-      setArticles((prev) => (prev.length === 0 ? filtered.slice(0, limit) : prev));
-      setTotal((prev) => (prev === 0 ? (selectedSource === 'All' ? bootstrap.totalArticles : filtered.length) : prev));
-      setIsLoading(false);
-    });
-
-    // Background revalidation
-    loadArticles(false);
-
-    return () => {
-      isSubscribed = false;
-    };
-  }, [loadArticles, selectedSource, limit]);
+    loadArticles(true);
+  }, [loadArticles]);
 
   useEffect(() => {
     const handleRefresh = () => {

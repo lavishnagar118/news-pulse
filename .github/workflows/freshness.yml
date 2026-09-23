@@ -6,9 +6,6 @@ on:
     - cron: '17,32,47,2 * * * *'
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   refresh-news:
     name: Trigger Ingestion & Refresh Dataset
@@ -30,24 +27,3 @@ jobs:
           INGESTION_SERVICE_SECRET: ${{ secrets.INGESTION_SERVICE_SECRET }}
         run: |
           python .github/scripts/trigger_ingest.py
-
-      - name: Update Bootstrap News Snapshot
-        if: success()
-        env:
-          NEWS_PULSE_API_URL: https://news-pulse-api-xyxh.onrender.com
-        run: |
-          python .github/scripts/generate_bootstrap.py
-
-      - name: Commit & Push Snapshot Changes
-        if: success()
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          if ! git diff --quiet frontend/public/data/bootstrap.json; then
-            echo "Bootstrap snapshot updated with fresh news."
-            git add frontend/public/data/bootstrap.json
-            git commit -m "chore(data): update bootstrap news snapshot [skip ci]"
-            git push
-          else
-            echo "No change in bootstrap snapshot."
-          fi
