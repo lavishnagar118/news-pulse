@@ -9,7 +9,7 @@ Designed to function as a modern digital newspaper with an embedded intelligence
 - **Frontend**: [https://news-pulse-brown.vercel.app](https://news-pulse-brown.vercel.app)
 - **Backend API**: [https://news-pulse-api-xyxh.onrender.com](https://news-pulse-api-xyxh.onrender.com)
 - **Database**: Hosted MongoDB Atlas Cluster
-- **Freshness**: Periodically refreshed via automated GitHub Actions cron every 15 minutes (`.github/workflows/freshness.yml`) and user-triggered on-demand refresh.
+- **Freshness**: News Pulse refreshes its dataset periodically through scheduled ingestion (automated GitHub Actions cron every 5 minutes in `.github/workflows/freshness.yml`) and also supports on-demand user-triggered refresh.
 
 ---
 

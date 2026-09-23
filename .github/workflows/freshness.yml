@@ -2,8 +2,8 @@ name: News Pulse Automated Freshness
 
 on:
   schedule:
-    # Runs every 15 minutes with a 17-minute offset away from the top of the hour
-    - cron: '17,32,47,2 * * * *'
+    # Runs every 5 minutes with a staggered offset avoiding the top of the hour
+    - cron: '4,9,14,19,24,29,34,39,44,49,54,59 * * * *'
   workflow_dispatch:
 
 jobs:
