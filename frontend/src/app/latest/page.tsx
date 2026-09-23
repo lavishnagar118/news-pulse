@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Article } from '@/lib/types';
@@ -14,22 +14,42 @@ export default function LatestPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSource, setSelectedSource] = useState<string>('All');
 
-  useEffect(() => {
-    setIsLoading(true);
+  const loadArticles = useCallback((isInitial = false) => {
+    if (isInitial) {
+      setIsLoading(true);
+    }
     fetchArticles({
       source: selectedSource !== 'All' ? selectedSource : undefined,
       limit,
     })
       .then((res) => {
-        setArticles(res.data);
-        setTotal(res.total);
-        setIsLoading(false);
+        if (res.data) {
+          setArticles(res.data);
+          setTotal(res.total);
+        }
+        if (isInitial) setIsLoading(false);
       })
       .catch(() => {
-        setArticles([]);
-        setIsLoading(false);
+        if (isInitial) {
+          setArticles([]);
+          setIsLoading(false);
+        }
       });
   }, [selectedSource, limit]);
+
+  useEffect(() => {
+    loadArticles(true);
+  }, [loadArticles]);
+
+  useEffect(() => {
+    const handleRefresh = () => {
+      loadArticles(false);
+    };
+    window.addEventListener('news-pulse-refresh', handleRefresh);
+    return () => {
+      window.removeEventListener('news-pulse-refresh', handleRefresh);
+    };
+  }, [loadArticles]);
 
   return (
     <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-6">

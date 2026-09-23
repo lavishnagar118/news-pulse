@@ -98,13 +98,13 @@ export async function triggerIngestion(force: boolean = false): Promise<Ingestio
     // Concurrency guard active: returns existing active jobId
     const activeJobId = body?.error?.jobId;
     if (activeJobId) {
-      return { jobId: activeJobId, status: 'queued' };
+      return { jobId: activeJobId, status: 'queued', isConcurrent: true };
     }
     throw new Error('Refresh already in progress…');
   }
 
   if (!res.ok) {
-    throw new Error("Couldn't refresh news right now. Please try again.");
+    throw new Error("Refresh couldn't complete. Your current news is still available.");
   }
 
   return body;
@@ -117,7 +117,7 @@ export async function triggerIngestion(force: boolean = false): Promise<Ingestio
 export async function fetchJobStatus(jobId: string): Promise<IngestionJob> {
   const res = await fetch(`${getApiBaseUrl()}/ingest/status/${jobId}`, { cache: 'no-store' });
   if (!res.ok) {
-    throw new Error("Couldn't refresh news right now. Please try again.");
+    throw new Error("Refresh couldn't complete. Your current news is still available.");
   }
 
   return res.json();
@@ -130,11 +130,16 @@ export async function pollJobStatus(
   jobId: string,
   onUpdate?: (job: IngestionJob) => void,
   intervalMs: number = 2000,
-  maxWaitMs: number = 120000
+  maxWaitMs: number = 120000,
+  signal?: AbortSignal
 ): Promise<IngestionJob> {
   const startTime = Date.now();
 
   while (Date.now() - startTime < maxWaitMs) {
+    if (signal?.aborted) {
+      throw new Error('Polling aborted');
+    }
+
     const job = await fetchJobStatus(jobId);
     if (onUpdate) onUpdate(job);
 
@@ -142,13 +147,25 @@ export async function pollJobStatus(
       return job;
     }
     if (job.status === 'failed') {
-      throw new Error("Couldn't refresh news right now. Please try again.");
+      throw new Error("Refresh couldn't complete. Your current news is still available.");
     }
 
-    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(resolve, intervalMs);
+      if (signal) {
+        signal.addEventListener(
+          'abort',
+          () => {
+            clearTimeout(timer);
+            reject(new Error('Polling aborted'));
+          },
+          { once: true }
+        );
+      }
+    });
   }
 
-  throw new Error("Couldn't refresh news right now. Please try again.");
+  throw new Error("Refresh couldn't complete. Your current news is still available.");
 }
 
 /**

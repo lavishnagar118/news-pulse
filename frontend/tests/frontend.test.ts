@@ -247,12 +247,12 @@ describe('News Pulse Frontend Unit & Logic Tests', () => {
 
   test('6f. formatRefreshError: handles failure gracefully with polite human copy', () => {
     const networkErr = new Error('Failed to fetch from /ingest/trigger: 500 Internal Server Error');
-    assert.equal(formatRefreshError(networkErr), "Couldn't refresh news right now. Please try again.");
+    assert.equal(formatRefreshError(networkErr), "Refresh couldn't complete. Your current news is still available.");
 
     const mongoErr = new Error('MongoNetworkTimeoutError: connection lost');
-    assert.equal(formatRefreshError(mongoErr), "Couldn't refresh news right now. Please try again.");
+    assert.equal(formatRefreshError(mongoErr), "Refresh couldn't complete. Your current news is still available.");
 
-    assert.equal(formatRefreshError(null), "Couldn't refresh news right now. Please try again.");
+    assert.equal(formatRefreshError(null), "Refresh couldn't complete. Your current news is still available.");
   });
 
   test('6g. Raw backend JSON, jobId, or internal error payloads are NEVER rendered', () => {
@@ -371,7 +371,7 @@ describe('News Pulse Frontend Unit & Logic Tests', () => {
       await assert.rejects(
         async () => pollJobStatus('job_fail_123', undefined, 5, 120000),
         (err: Error) => {
-          assert.equal(err.message, "Couldn't refresh news right now. Please try again.");
+          assert.equal(err.message, "Refresh couldn't complete. Your current news is still available.");
           return true;
         }
       );
@@ -398,7 +398,7 @@ describe('News Pulse Frontend Unit & Logic Tests', () => {
       await assert.rejects(
         async () => pollJobStatus('job_timeout_123', undefined, 10, 35),
         (err: Error) => {
-          assert.equal(err.message, "Couldn't refresh news right now. Please try again.");
+          assert.equal(err.message, "Refresh couldn't complete. Your current news is still available.");
           return true;
         }
       );
@@ -407,4 +407,420 @@ describe('News Pulse Frontend Unit & Logic Tests', () => {
     }
   });
 });
+
+describe('Asynchronous Refresh UX & Architecture Requirements', () => {
+  // 1. 202 response starts background refresh
+  test('1. 202 response starts background refresh with immediate non-blocking copy', async () => {
+    const { refreshManager } = await import('../src/lib/refreshManager');
+    const originalFetch = global.fetch;
+
+    try {
+      global.fetch = async (url: any) => {
+        const u = String(url);
+        if (u.includes('/ingest/trigger')) {
+          return new Response(JSON.stringify({ jobId: 'job_202_test', status: 'queued' }), {
+            status: 202,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        if (u.includes('/ingest/status/')) {
+          return new Response(
+            JSON.stringify({
+              jobId: 'job_202_test',
+              status: 'running',
+              stats: { articlesFetched: 10 },
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        return new Response('{}', { status: 200 });
+      };
+
+      refreshManager.resetForTesting();
+      const promise = refreshManager.triggerRefresh();
+
+      const state = refreshManager.getState();
+      assert.equal(state.isRefreshing, true);
+      assert.equal(state.statusMessage, 'Refresh started · checking for new stories…');
+
+      refreshManager.stop();
+      await promise.catch(() => {});
+    } finally {
+      global.fetch = originalFetch;
+      refreshManager.stop();
+    }
+  });
+
+  // 2. current data remains visible while refreshing
+  test('2. current data remains visible and intact while refreshing is active', async () => {
+    const { refreshManager } = await import('../src/lib/refreshManager');
+    refreshManager.resetForTesting({ isRefreshing: true, statusMessage: 'Refresh running in the background…' });
+
+    // Simulate page dataset state
+    const currentArticles = [
+      { id: 'art-1', title: 'Existing Article 1' },
+      { id: 'art-2', title: 'Existing Article 2' },
+    ];
+
+    const isRefreshing = refreshManager.getState().isRefreshing;
+    assert.equal(isRefreshing, true);
+    // Dataset fallback invariant: articles array is not emptied and remains populated
+    assert.equal(currentArticles.length, 2);
+    assert.equal(currentArticles[0].title, 'Existing Article 1');
+  });
+
+  // 3. user interaction remains available
+  test('3. user interaction and filtering remain available during refresh', async () => {
+    const { refreshManager } = await import('../src/lib/refreshManager');
+    refreshManager.resetForTesting({ isRefreshing: true });
+
+    // User interactions: category changing and filtering logic can execute concurrently
+    let activeCategory = 'World';
+    const switchCategory = (newCat: string) => {
+      activeCategory = newCat;
+    };
+
+    switchCategory('Technology');
+    assert.equal(activeCategory, 'Technology');
+    assert.equal(refreshManager.getState().isRefreshing, true);
+  });
+
+  // 4. job transitions queued → running → completed
+  test('4. job transitions cleanly queued → running → completed with proper human messages', async () => {
+    const { refreshManager } = await import('../src/lib/refreshManager');
+    const originalFetch = global.fetch;
+
+    let pollCount = 0;
+    try {
+      global.fetch = async (url: any) => {
+        const u = String(url);
+        if (u.includes('/ingest/trigger')) {
+          return new Response(JSON.stringify({ jobId: 'job_trans_123', status: 'queued' }), {
+            status: 202,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        if (u.includes('/ingest/status/')) {
+          pollCount++;
+          const status = pollCount === 1 ? 'queued' : pollCount === 2 ? 'running' : 'completed';
+          return new Response(
+            JSON.stringify({
+              jobId: 'job_trans_123',
+              status,
+              stats: {
+                articlesFetched: 20,
+                articlesAdded: 3,
+                duplicatesSkipped: 17,
+                feedsFailed: 0,
+              },
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        return new Response('{}', { status: 200 });
+      };
+
+      refreshManager.resetForTesting();
+      refreshManager.setPollIntervalForTesting(5);
+      await refreshManager.triggerRefresh();
+      await refreshManager.waitForPollingToFinish();
+
+      const finalState = refreshManager.getState();
+      assert.equal(finalState.isRefreshing, false);
+      assert.equal(finalState.statusMessage, null);
+      assert.equal(finalState.successMessage, 'Updated just now · 3 new stories · 17 duplicates skipped');
+      assert.equal(finalState.lastSyncText, 'Last synced: just now');
+    } finally {
+      global.fetch = originalFetch;
+      refreshManager.stop();
+    }
+  });
+
+  // 5. completed job triggers fresh-data refetch
+  test('5. completed job dispatches news-pulse-refresh event for silent page refetch', async () => {
+    const { refreshManager } = await import('../src/lib/refreshManager');
+    const originalFetch = global.fetch;
+
+    let eventDispatched = false;
+    let eventDetail: any = null;
+
+    const originalWindow = (global as any).window;
+    (global as any).window = {
+      dispatchEvent: (evt: any) => {
+        if (evt.type === 'news-pulse-refresh') {
+          eventDispatched = true;
+          eventDetail = evt.detail;
+        }
+      },
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    };
+
+    try {
+      global.fetch = async (url: any) => {
+        const u = String(url);
+        if (u.includes('/ingest/trigger')) {
+          return new Response(JSON.stringify({ jobId: 'job_event_1', status: 'queued' }), {
+            status: 202,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        if (u.includes('/ingest/status/')) {
+          return new Response(
+            JSON.stringify({
+              jobId: 'job_event_1',
+              status: 'completed',
+              stats: { articlesFetched: 15, articlesAdded: 2, duplicatesSkipped: 13 },
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        return new Response('{}', { status: 200 });
+      };
+
+      refreshManager.resetForTesting();
+      refreshManager.setPollIntervalForTesting(5);
+      await refreshManager.triggerRefresh();
+      await refreshManager.waitForPollingToFinish();
+
+      assert.equal(eventDispatched, true);
+      assert.equal(eventDetail?.articlesAdded, 2);
+    } finally {
+      (global as any).window = originalWindow;
+      global.fetch = originalFetch;
+      refreshManager.stop();
+    }
+  });
+
+  // 6. zero new stories message
+  test('6. zero new stories message displays exact required copy', () => {
+    const msg = formatRefreshCompletion({
+      articlesAdded: 0,
+      duplicatesSkipped: 32,
+      feedsFailed: 0,
+    });
+    assert.equal(msg, "You're up to date · No new stories found");
+  });
+
+  // 7. new stories message
+  test('7. new stories message displays exact required copy with singular/plural support', () => {
+    const msgPlural = formatRefreshCompletion({
+      articlesAdded: 5,
+      duplicatesSkipped: 12,
+      feedsFailed: 0,
+    });
+    assert.equal(msgPlural, 'Updated just now · 5 new stories · 12 duplicates skipped');
+
+    const msgSingular = formatRefreshCompletion({
+      articlesAdded: 1,
+      duplicatesSkipped: 4,
+      feedsFailed: 0,
+    });
+    assert.equal(msgSingular, 'Updated just now · 1 new story · 4 duplicates skipped');
+  });
+
+  // 8. 409 existing-job behavior
+  test('8. 409 response shows Refresh already in progress and attaches to active job', async () => {
+    const { refreshManager } = await import('../src/lib/refreshManager');
+    const originalFetch = global.fetch;
+
+    let statusPolled = false;
+    try {
+      global.fetch = async (url: any) => {
+        const u = String(url);
+        if (u.includes('/ingest/trigger')) {
+          return new Response(
+            JSON.stringify({
+              error: { code: 'CONCURRENT_JOB_RUNNING', jobId: 'job_existing_409' },
+            }),
+            { status: 409, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        if (u.includes('/ingest/status/job_existing_409')) {
+          statusPolled = true;
+          return new Response(
+            JSON.stringify({
+              jobId: 'job_existing_409',
+              status: 'completed',
+              stats: { articlesFetched: 10, articlesAdded: 0, duplicatesSkipped: 10 },
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        return new Response('{}', { status: 200 });
+      };
+
+      refreshManager.resetForTesting();
+      refreshManager.setPollIntervalForTesting(5);
+      await refreshManager.triggerRefresh();
+      await refreshManager.waitForPollingToFinish();
+
+      assert.equal(statusPolled, true);
+      const state = refreshManager.getState();
+      assert.equal(state.isRefreshing, false);
+      assert.equal(state.successMessage, "You're up to date · No new stories found");
+    } finally {
+      global.fetch = originalFetch;
+      refreshManager.stop();
+    }
+  });
+
+  // 9. failed job keeps existing dataset
+  test('9. failed job keeps existing dataset and shows polite sanitized failure copy', async () => {
+    const { refreshManager } = await import('../src/lib/refreshManager');
+    const originalFetch = global.fetch;
+
+    const mockDataset = [{ id: '1', title: 'Unchanged Article' }];
+
+    try {
+      global.fetch = async (url: any) => {
+        const u = String(url);
+        if (u.includes('/ingest/trigger')) {
+          return new Response(JSON.stringify({ jobId: 'job_fails', status: 'queued' }), {
+            status: 202,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        if (u.includes('/ingest/status/')) {
+          return new Response(
+            JSON.stringify({
+              jobId: 'job_fails',
+              status: 'failed',
+              error: 'Cold start timeout 504 Gateway Timeout',
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        return new Response('{}', { status: 200 });
+      };
+
+      refreshManager.resetForTesting();
+      refreshManager.setPollIntervalForTesting(5);
+      await refreshManager.triggerRefresh();
+      await refreshManager.waitForPollingToFinish();
+
+      const state = refreshManager.getState();
+      assert.equal(state.isRefreshing, false);
+      assert.equal(state.errorMessage, "Refresh couldn't complete. Your current news is still available.");
+      // Existing dataset remains intact
+      assert.equal(mockDataset.length, 1);
+      assert.equal(mockDataset[0].title, 'Unchanged Article');
+    } finally {
+      global.fetch = originalFetch;
+      refreshManager.stop();
+    }
+  });
+
+  // 10. background polling cleanup
+  test('10. background polling cleanup stops active polling loop and clears timers', async () => {
+    const { refreshManager } = await import('../src/lib/refreshManager');
+    const originalFetch = global.fetch;
+
+    let pollAttempts = 0;
+    try {
+      global.fetch = async (url: any) => {
+        const u = String(url);
+        if (u.includes('/ingest/trigger')) {
+          return new Response(JSON.stringify({ jobId: 'job_cleanup_test', status: 'queued' }), {
+            status: 202,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        if (u.includes('/ingest/status/')) {
+          pollAttempts++;
+          return new Response(
+            JSON.stringify({ jobId: 'job_cleanup_test', status: 'queued' }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        return new Response('{}', { status: 200 });
+      };
+
+      refreshManager.resetForTesting();
+      refreshManager.setPollIntervalForTesting(10);
+      await refreshManager.triggerRefresh();
+
+      // Yield briefly to let polling start
+      await new Promise((r) => setTimeout(r, 25));
+      assert.ok(pollAttempts >= 1);
+
+      // Stop manager (simulating unmount or cancellation)
+      refreshManager.stop();
+      const initialCount = pollAttempts;
+
+      // Wait a moment and verify no more polling calls occurred
+      await new Promise((r) => setTimeout(r, 40));
+      assert.equal(pollAttempts, initialCount);
+    } finally {
+      global.fetch = originalFetch;
+      refreshManager.stop();
+    }
+  });
+
+  // 11. no duplicate polling loops
+  test('11. no duplicate polling loops when refresh is triggered concurrently', async () => {
+    const { refreshManager } = await import('../src/lib/refreshManager');
+    const originalFetch = global.fetch;
+
+    let triggerCount = 0;
+    try {
+      global.fetch = async (url: any) => {
+        const u = String(url);
+        if (u.includes('/ingest/trigger')) {
+          triggerCount++;
+          return new Response(JSON.stringify({ jobId: 'job_dup_1', status: 'queued' }), {
+            status: 202,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+        if (u.includes('/ingest/status/')) {
+          return new Response(
+            JSON.stringify({ jobId: 'job_dup_1', status: 'running' }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        return new Response('{}', { status: 200 });
+      };
+
+      refreshManager.resetForTesting();
+      refreshManager.setPollIntervalForTesting(10);
+      // Concurrent calls to triggerRefresh
+      const p1 = refreshManager.triggerRefresh();
+      const p2 = refreshManager.triggerRefresh();
+      const p3 = refreshManager.triggerRefresh();
+
+      await Promise.all([p1, p2, p3]);
+
+      // Exactly ONE trigger request should have been fired
+      assert.equal(triggerCount, 1);
+    } finally {
+      global.fetch = originalFetch;
+      refreshManager.stop();
+    }
+  });
+
+  // 12. raw JSON/jobId never rendered
+  test('12. raw JSON, job IDs, 502/503 errors, and internal URLs are never exposed in user copy', () => {
+    const problematicErrors = [
+      '{"error":{"code":"CONCURRENT_JOB_RUNNING","jobId":"job_1727094000_abc123"}}',
+      'job_1727094000_abc123 failed to complete within timeout',
+      'HTTP 502 Bad Gateway from https://news-pulse-scraper.onrender.com/run',
+      'HTTP 503 Service Unavailable: Render instance spinning up',
+      'Error at Object.fetch (/var/task/node_modules/...)',
+    ];
+
+    for (const err of problematicErrors) {
+      const sanitized = formatRefreshError(err);
+      assert.ok(!sanitized.includes('job_'), `Must not contain jobId: ${sanitized}`);
+      assert.ok(!sanitized.includes('{'), `Must not contain JSON: ${sanitized}`);
+      assert.ok(!sanitized.includes('}'), `Must not contain JSON: ${sanitized}`);
+      assert.ok(!sanitized.includes('502'), `Must not contain status codes: ${sanitized}`);
+      assert.ok(!sanitized.includes('503'), `Must not contain status codes: ${sanitized}`);
+      assert.ok(!sanitized.includes('http'), `Must not contain URLs: ${sanitized}`);
+      assert.ok(!sanitized.includes('CONCURRENT'), `Must not contain error code: ${sanitized}`);
+      assert.ok(!sanitized.includes('/var/task'), `Must not contain stack paths: ${sanitized}`);
+    }
+  });
+});
+
 

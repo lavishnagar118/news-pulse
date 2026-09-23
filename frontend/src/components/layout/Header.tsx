@@ -4,9 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Search, RefreshCw, Menu, X, Activity } from 'lucide-react';
-import { triggerIngestion, pollJobStatus, fetchLatestJobStatus } from '@/lib/api';
 import { useScrollState } from '@/hooks/useScrollState';
-import { formatRefreshCompletion, formatRefreshError } from '@/lib/formatters';
+import { useRefresh } from '@/hooks/useRefresh';
 
 const CATEGORIES = [
   { name: 'Home', href: '/' },
@@ -33,10 +32,18 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [refreshMessage, setRefreshMessage] = useState<string | null>(null);
-  const [lastUpdatedText, setLastUpdatedText] = useState<string | null>(null);
   const { isScrolled } = useScrollState({ thresholdDown: 48, thresholdUp: 16 });
+
+  const {
+    isRefreshing,
+    statusMessage,
+    successMessage,
+    errorMessage,
+    lastSyncText,
+    triggerRefresh,
+  } = useRefresh({ onRefreshSuccess });
+
+  const refreshBanner = statusMessage || successMessage || errorMessage;
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -53,63 +60,11 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
     }
   }, [isSearchOpen]);
 
-  // Fetch initial latest sync timestamp
-  useEffect(() => {
-    const updateTimestamp = async () => {
-      const job = await fetchLatestJobStatus();
-      if (job?.completedAt) {
-        const d = new Date(job.completedAt);
-        const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
-        setLastUpdatedText(`Last synced: ${timeStr}`);
-      }
-    };
-    updateTimestamp();
-  }, []);
-
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setIsSearchOpen(false);
-    }
-  };
-
-  const handleRefresh = async () => {
-    if (isRefreshing) return;
-    setIsRefreshing(true);
-    setRefreshMessage('Refreshing news…');
-
-    try {
-      const { jobId } = await triggerIngestion();
-      setRefreshMessage('Processing latest stories…');
-
-      const completedJob = await pollJobStatus(jobId, (job) => {
-        if (job.status === 'running') {
-          setRefreshMessage('Processing latest stories…');
-        }
-      });
-
-      const completionText = formatRefreshCompletion(completedJob.stats);
-      setRefreshMessage(completionText);
-      setLastUpdatedText('Last synced: just now');
-
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('news-pulse-refresh'));
-      }
-      router.refresh();
-      if (onRefreshSuccess) {
-        onRefreshSuccess();
-      }
-      setTimeout(() => {
-        setRefreshMessage(null);
-        setIsRefreshing(false);
-      }, 5000);
-    } catch (err: any) {
-      setRefreshMessage(formatRefreshError(err));
-      setTimeout(() => {
-        setRefreshMessage(null);
-        setIsRefreshing(false);
-      }, 4000);
     }
   };
 
@@ -144,32 +99,36 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
             <span className="hidden md:inline-block font-semibold uppercase tracking-wider text-[11px] text-stone-500">
               Global Edition
             </span>
-            {lastUpdatedText && (
+            {lastSyncText && (
               <>
                 <span className="hidden lg:inline-block text-stone-300">|</span>
                 <span className="hidden lg:inline-flex items-center gap-1.5 text-[11px] text-stone-500 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  {lastUpdatedText}
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none"></span>
+                  {lastSyncText}
                 </span>
               </>
             )}
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3" aria-live="polite" aria-atomic="true">
-            {refreshMessage && (
+            {refreshBanner && (
               <span className="text-[11px] font-medium text-stone-700 bg-stone-100 px-2 py-0.5 rounded border border-stone-200 truncate max-w-[240px] sm:max-w-none">
-                {refreshMessage}
+                {refreshBanner}
               </span>
             )}
             <button
               type="button"
-              onClick={handleRefresh}
+              onClick={triggerRefresh}
               disabled={isRefreshing}
               aria-label={isRefreshing ? 'Refreshing news stories' : 'Refresh news data'}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xs text-xs font-semibold bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors disabled:opacity-60 cursor-pointer shadow-2xs focus:outline-none focus:ring-2 focus:ring-stone-400"
               title="Trigger real-time RSS ingestion and topic clustering"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-stone-600' : 'text-stone-500'}`} />
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${
+                  isRefreshing ? 'animate-spin motion-reduce:animate-none text-stone-600' : 'text-stone-500'
+                }`}
+              />
               <span>{isRefreshing ? 'Refreshing…' : 'Refresh Data'}</span>
             </button>
           </div>
@@ -258,20 +217,24 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
             {/* Scrolled State Refresh Trigger */}
             {isScrolled && (
               <div className="flex items-center gap-2" aria-live="polite" aria-atomic="true">
-                {refreshMessage && (
+                {refreshBanner && (
                   <span className="text-[11px] font-medium text-stone-700 bg-stone-100 px-2 py-0.5 rounded border border-stone-200 truncate max-w-[200px]">
-                    {refreshMessage}
+                    {refreshBanner}
                   </span>
                 )}
                 <button
                   type="button"
-                  onClick={handleRefresh}
+                  onClick={triggerRefresh}
                   disabled={isRefreshing}
                   aria-label={isRefreshing ? 'Refreshing news stories' : 'Refresh news data'}
                   className="inline-flex items-center gap-1.5 px-2 py-1 rounded-xs text-xs font-semibold bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors disabled:opacity-60 cursor-pointer shadow-2xs focus:outline-none focus:ring-2 focus:ring-stone-400"
                   title="Trigger real-time RSS ingestion and topic clustering"
                 >
-                  <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin text-stone-600' : 'text-stone-500'}`} />
+                  <RefreshCw
+                    className={`w-3 h-3 ${
+                      isRefreshing ? 'animate-spin motion-reduce:animate-none text-stone-600' : 'text-stone-500'
+                    }`}
+                  />
                   <span>{isRefreshing ? 'Refreshing…' : 'Refresh'}</span>
                 </button>
               </div>
@@ -297,14 +260,18 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
             {isScrolled && (
               <button
                 type="button"
-                onClick={handleRefresh}
+                onClick={triggerRefresh}
                 disabled={isRefreshing}
                 aria-label="Refresh news data"
                 className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-stone-700 hover:bg-stone-100 active:bg-stone-200 rounded-xs transition-colors relative focus:outline-none focus:ring-2 focus:ring-stone-400"
                 title="Refresh news stories"
               >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-blue-600' : 'text-stone-600'}`} />
-                {lastUpdatedText && !isRefreshing && (
+                <RefreshCw
+                  className={`w-4 h-4 ${
+                    isRefreshing ? 'animate-spin motion-reduce:animate-none text-blue-600' : 'text-stone-600'
+                  }`}
+                />
+                {lastSyncText && !isRefreshing && (
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 absolute top-2 right-2"></span>
                 )}
               </button>
@@ -397,10 +364,10 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
           {/* Metadata pill in mobile menu */}
           <div className="flex items-center justify-between pb-3 mb-2 border-b border-stone-100 text-xs text-stone-500">
             <span>{todayStr}</span>
-            {lastUpdatedText && (
+            {lastSyncText && (
               <span className="flex items-center gap-1 font-medium text-stone-600">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                {lastUpdatedText}
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none"></span>
+                {lastSyncText}
               </span>
             )}
           </div>
@@ -436,19 +403,23 @@ export const Header: React.FC<HeaderProps> = ({ onRefreshSuccess }) => {
 
           {/* Drawer Refresh Button */}
           <div className="pt-4 mt-2 border-t border-stone-100" aria-live="polite" aria-atomic="true">
-            {refreshMessage && (
+            {refreshBanner && (
               <div className="mb-2 text-xs font-medium text-stone-700 bg-stone-50 px-3 py-1.5 rounded-xs border border-stone-200 text-center">
-                {refreshMessage}
+                {refreshBanner}
               </div>
             )}
             <button
               type="button"
-              onClick={handleRefresh}
+              onClick={triggerRefresh}
               disabled={isRefreshing}
               aria-label={isRefreshing ? 'Refreshing news stories' : 'Refresh news data'}
               className="w-full min-h-[44px] flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-stone-800 bg-stone-100 hover:bg-stone-200 active:bg-stone-300 rounded-xs transition-colors disabled:opacity-60"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-stone-600' : 'text-stone-600'}`} />
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${
+                  isRefreshing ? 'animate-spin motion-reduce:animate-none text-stone-600' : 'text-stone-600'
+                }`}
+              />
               <span>{isRefreshing ? 'Refreshing news…' : 'Refresh News Data'}</span>
             </button>
           </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Sparkles, Layers } from 'lucide-react';
@@ -22,8 +22,10 @@ export default function CategoryPage() {
   const [selectedSource, setSelectedSource] = useState<string>('All');
   const [selectedClusterId, setSelectedClusterId] = useState<string | null>(null);
 
-  useEffect(() => {
-    setIsLoading(true);
+  const loadCategoryData = useCallback((isInitial = false) => {
+    if (isInitial) {
+      setIsLoading(true);
+    }
     Promise.all([
       fetchArticles({
         category: category,
@@ -33,17 +35,39 @@ export default function CategoryPage() {
       fetchTimeline(),
     ])
       .then(([articlesRes, timelineRes]) => {
-        setArticles(articlesRes.data || []);
-        setTotal(articlesRes.total || 0);
-        setClusters(timelineRes.data || []);
-        setIsLoading(false);
+        if (articlesRes.data) {
+          setArticles(articlesRes.data);
+        }
+        if (articlesRes.total !== undefined) {
+          setTotal(articlesRes.total);
+        }
+        if (timelineRes.data) {
+          setClusters(timelineRes.data);
+        }
+        if (isInitial) setIsLoading(false);
       })
       .catch(() => {
-        setArticles([]);
-        setTotal(0);
-        setIsLoading(false);
+        if (isInitial) {
+          setArticles([]);
+          setTotal(0);
+          setIsLoading(false);
+        }
       });
   }, [category, selectedSource]);
+
+  useEffect(() => {
+    loadCategoryData(true);
+  }, [loadCategoryData]);
+
+  useEffect(() => {
+    const handleRefresh = () => {
+      loadCategoryData(false);
+    };
+    window.addEventListener('news-pulse-refresh', handleRefresh);
+    return () => {
+      window.removeEventListener('news-pulse-refresh', handleRefresh);
+    };
+  }, [loadCategoryData]);
 
   // Lead story + secondary stories partition
   const featuredStory = articles.length > 0 ? articles[0] : null;

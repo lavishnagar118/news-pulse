@@ -18,23 +18,41 @@ export default function TimelinePage() {
   const [selectedClusterId, setSelectedClusterId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadTimeline = () => {
-    setIsLoading(true);
+  const loadTimeline = (isInitial = false) => {
+    if (isInitial) {
+      setIsLoading(true);
+    }
     fetchTimeline()
       .then((res) => {
-        setClusters(res.data || []);
+        if (res.data) {
+          setClusters(res.data);
+        }
         const s = res.sources || ['BBC News', 'NPR News', 'Al Jazeera'];
         setSources(s);
         setSelectedSources((prev) => (prev.length === 0 ? s : prev));
-        setIsLoading(false);
+        if (isInitial) {
+          setIsLoading(false);
+        }
       })
       .catch(() => {
-        setIsLoading(false);
+        if (isInitial) {
+          setIsLoading(false);
+        }
       });
   };
 
   useEffect(() => {
-    loadTimeline();
+    loadTimeline(true);
+  }, []);
+
+  useEffect(() => {
+    const handleRefresh = () => {
+      loadTimeline(false);
+    };
+    window.addEventListener('news-pulse-refresh', handleRefresh);
+    return () => {
+      window.removeEventListener('news-pulse-refresh', handleRefresh);
+    };
   }, []);
 
   const handleToggleSource = (source: string) => {

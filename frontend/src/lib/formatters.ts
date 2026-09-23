@@ -234,7 +234,7 @@ export function formatRefreshCompletion(stats?: {
 
 export function formatRefreshError(err: any): string {
   if (!err) {
-    return "Couldn't refresh news right now. Please try again.";
+    return "Refresh couldn't complete. Your current news is still available.";
   }
 
   const raw = typeof err === 'string' ? err : err?.message || '';
@@ -250,7 +250,7 @@ export function formatRefreshError(err: any): string {
   }
 
   // Always return user-friendly, polished copy — never expose technical errors or JSON
-  return "Couldn't refresh news right now. Please try again.";
+  return "Refresh couldn't complete. Your current news is still available.";
 }
 
 

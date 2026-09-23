@@ -90,6 +90,7 @@ export interface IngestionJob {
 export interface IngestionTriggerResponse {
   jobId: string;
   status: 'queued';
+  isConcurrent?: boolean;
 }
 
 export interface ApiError {

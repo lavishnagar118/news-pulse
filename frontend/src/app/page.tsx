@@ -21,32 +21,46 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
 
   // Load initial editorial feed & timeline data from real Node.js REST API
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (isInitial = false) => {
     try {
-      setError(null);
+      if (isInitial) {
+        setError(null);
+        setIsLoading(true);
+      }
       // Fetch generous batch of articles so all category sections & latest grid are populated with real content
       const [timelineRes, articlesRes] = await Promise.all([
         fetchTimeline(),
         fetchArticles({ limit: 50, offset: 0 }),
       ]);
 
-      setTimelineItems(timelineRes.data || []);
-      setArticles(articlesRes.data || []);
+      if (timelineRes?.data) {
+        setTimelineItems(timelineRes.data);
+      }
+      if (articlesRes?.data) {
+        setArticles(articlesRes.data);
+      }
+      if (isInitial) {
+        setError(null);
+      }
     } catch (err: any) {
-      setError(err?.message || 'Failed to load news content. Please verify that the backend API is running.');
+      if (isInitial) {
+        setError(err?.message || 'Failed to load news content. Please verify that the backend API is running.');
+      }
     } finally {
-      setIsLoading(false);
+      if (isInitial) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    loadData();
+    loadData(true);
   }, [loadData]);
 
   // Listen for global ingestion refresh event triggered from Header or external triggers
   useEffect(() => {
     const handleRefreshEvent = () => {
-      loadData();
+      loadData(false);
     };
 
     window.addEventListener('news-pulse-refresh', handleRefreshEvent);
