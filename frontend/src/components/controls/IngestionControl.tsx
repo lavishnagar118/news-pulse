@@ -55,7 +55,7 @@ export const IngestionControl: React.FC<IngestionControlProps> = ({
           }
         },
         2000,
-        90000
+        120000
       );
 
       // 3. Completed: reload timeline and show human-readable statistics

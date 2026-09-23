@@ -21,7 +21,7 @@ export class HttpIngestionRunner implements IIngestionRunner {
 
   constructor(options?: HttpIngestionRunnerOptions) {
     this.retryIntervalMs = options?.retryIntervalMs ?? 3500;
-    this.maxDeadlineMs = options?.maxDeadlineMs ?? 70000;
+    this.maxDeadlineMs = options?.maxDeadlineMs ?? 105000;
     this.perRequestTimeoutMs = options?.perRequestTimeoutMs ?? 15000;
   }
 

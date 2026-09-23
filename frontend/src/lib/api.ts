@@ -130,7 +130,7 @@ export async function pollJobStatus(
   jobId: string,
   onUpdate?: (job: IngestionJob) => void,
   intervalMs: number = 2000,
-  maxWaitMs: number = 90000
+  maxWaitMs: number = 120000
 ): Promise<IngestionJob> {
   const startTime = Date.now();
 

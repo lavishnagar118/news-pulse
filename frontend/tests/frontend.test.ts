@@ -316,4 +316,95 @@ describe('News Pulse Frontend Unit & Logic Tests', () => {
     assert.equal(refineClusterLabel('Texas Man Shoots'), 'Texas Shooting Investigation');
     assert.equal(refineClusterLabel('Unknown Alpha Beta'), 'Unknown Alpha Beta');
   });
+
+  // 10. Ingestion Polling and Status Progression
+  test('10a. pollJobStatus succeeds when job completes after queued/running progression', async () => {
+    const { pollJobStatus } = await import('../src/lib/api');
+    const originalFetch = global.fetch;
+
+    let calls = 0;
+    global.fetch = async () => {
+      calls++;
+      const status = calls === 1 ? 'queued' : calls === 2 ? 'running' : 'completed';
+      return new Response(
+        JSON.stringify({
+          jobId: 'job_test_123',
+          status,
+          stats: { articlesFetched: 10, articlesAdded: 3, duplicatesSkipped: 7 },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      const updates: string[] = [];
+      const result = await pollJobStatus(
+        'job_test_123',
+        (job) => updates.push(job.status),
+        5,
+        120000
+      );
+      assert.equal(result.status, 'completed');
+      assert.deepEqual(updates, ['queued', 'running', 'completed']);
+      assert.equal(calls, 3);
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  test('10b. pollJobStatus fails cleanly with sanitized message when job fails', async () => {
+    const { pollJobStatus } = await import('../src/lib/api');
+    const originalFetch = global.fetch;
+
+    global.fetch = async () => {
+      return new Response(
+        JSON.stringify({
+          jobId: 'job_fail_123',
+          status: 'failed',
+          error: 'Scraper service did not become ready within the cold-start window (last HTTP 502).',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      await assert.rejects(
+        async () => pollJobStatus('job_fail_123', undefined, 5, 120000),
+        (err: Error) => {
+          assert.equal(err.message, "Couldn't refresh news right now. Please try again.");
+          return true;
+        }
+      );
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  test('10c. pollJobStatus fails with sanitized error if deadline is exceeded', async () => {
+    const { pollJobStatus } = await import('../src/lib/api');
+    const originalFetch = global.fetch;
+
+    global.fetch = async () => {
+      return new Response(
+        JSON.stringify({
+          jobId: 'job_timeout_123',
+          status: 'queued',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      await assert.rejects(
+        async () => pollJobStatus('job_timeout_123', undefined, 10, 35),
+        (err: Error) => {
+          assert.equal(err.message, "Couldn't refresh news right now. Please try again.");
+          return true;
+        }
+      );
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
 });
+

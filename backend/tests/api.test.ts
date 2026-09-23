@@ -485,6 +485,15 @@ describe('News Pulse REST API Integration Tests', () => {
     }
   });
 
+  // 11g. HttpIngestionRunner defaults to 105000ms deadline, 3500ms retryInterval, 15000ms perRequestTimeout
+  test('11g. HttpIngestionRunner defaults to 105000ms deadline', async () => {
+    const { HttpIngestionRunner } = await import('../src/services/ingestion/http.runner');
+    const runner = new HttpIngestionRunner();
+    assert.equal((runner as any).maxDeadlineMs, 105000);
+    assert.equal((runner as any).retryIntervalMs, 3500);
+    assert.equal((runner as any).perRequestTimeoutMs, 15000);
+  });
+
   // 12. HttpIngestionRunner throws if SCRAPER_SERVICE_URL is missing
   test('12. HttpIngestionRunner throws error if SCRAPER_SERVICE_URL is missing', async () => {
     const { HttpIngestionRunner } = await import('../src/services/ingestion/http.runner');
