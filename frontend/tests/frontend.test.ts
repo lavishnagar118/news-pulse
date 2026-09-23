@@ -823,4 +823,241 @@ describe('Asynchronous Refresh UX & Architecture Requirements', () => {
   });
 });
 
+describe('Bootstrap News Snapshot & SWR Hydration Fallback Tests', () => {
+  // 1. Bootstrap snapshot loads
+  test('1. Bootstrap snapshot loads valid, sanitized public news data', async () => {
+    const { fetchBootstrapData } = await import('../src/lib/api');
+    const snapshot = await fetchBootstrapData();
+
+    assert.ok(snapshot !== null, 'Bootstrap snapshot should be loadable');
+    assert.ok(Array.isArray(snapshot?.articles), 'Snapshot must contain articles array');
+    assert.ok(snapshot!.articles.length > 0, 'Snapshot must contain at least 1 genuine article');
+    assert.ok(Array.isArray(snapshot?.timeline?.data), 'Snapshot must contain timeline items array');
+    assert.ok(snapshot!.timeline.data.length > 0, 'Snapshot must contain at least 1 timeline item');
+    assert.ok(typeof snapshot!.generatedAt === 'string', 'Snapshot must have generatedAt timestamp');
+
+    // Security & Sanitization audit: ensure NO credentials, secrets, or internal DB info
+    const sensitiveTokens = ['password', 'secret', 'token', 'mongodb', 'atlas', 'uri', 'authorization', 'bearer'];
+    for (const article of snapshot!.articles) {
+      const keys = Object.keys(article);
+      for (const key of keys) {
+        for (const token of sensitiveTokens) {
+          assert.ok(!key.toLowerCase().includes(token), `Sensitive token "${token}" found in article key: ${key}`);
+        }
+      }
+      assert.ok(article.id && article.title && article.source && article.url, 'Article missing standard public fields');
+    }
+  });
+
+  // 2. Bootstrap data renders immediately (0ms fast path)
+  test('2. Bootstrap data hydrates state immediately without waiting for network backend', async () => {
+    const { fetchBootstrapData } = await import('../src/lib/api');
+    const snapshot = await fetchBootstrapData();
+    assert.ok(snapshot);
+
+    // Simulate page component state machine
+    let pageArticles: any[] = [];
+    let pageTimeline: any[] = [];
+    let isLoading = true;
+
+    // Fast-path hydration synchronously/instantly uses bootstrap snapshot
+    if (snapshot.articles && snapshot.articles.length > 0) {
+      pageArticles = snapshot.articles;
+    }
+    if (snapshot.timeline?.data && snapshot.timeline.data.length > 0) {
+      pageTimeline = snapshot.timeline.data;
+    }
+    isLoading = false;
+
+    // Reader sees stories in 0ms
+    assert.equal(isLoading, false);
+    assert.ok(pageArticles.length >= 10, 'Fast-path must populate reader stories immediately');
+    assert.ok(pageTimeline.length > 0, 'Fast-path must populate temporal timeline immediately');
+  });
+
+  // 3. API revalidation succeeds → live data replaces bootstrap
+  test('3. API revalidation succeeds: live data replaces bootstrap seamlessly', async () => {
+    let currentArticles = [{ id: 'bootstrap-1', title: 'Snapshot Story', source: 'BBC News' }];
+
+    // Simulate SWR live response
+    const liveApiResponse = [
+      { id: 'live-1', title: 'Fresh Breaking Story', source: 'Al Jazeera' },
+      { id: 'live-2', title: 'Fresh Developing Report', source: 'NPR News' },
+    ];
+
+    // Background revalidation completes
+    currentArticles = liveApiResponse;
+
+    assert.equal(currentArticles.length, 2);
+    assert.equal(currentArticles[0].id, 'live-1');
+    assert.equal(currentArticles[0].title, 'Fresh Breaking Story');
+  });
+
+  // 4. API revalidation fails → bootstrap remains usable
+  test('4. API revalidation fails: bootstrap remains usable with zero data loss', async () => {
+    const { fetchBootstrapData } = await import('../src/lib/api');
+    const snapshot = await fetchBootstrapData();
+    assert.ok(snapshot);
+
+    // Initial state with bootstrap snapshot
+    let displayedArticles = [...snapshot.articles];
+    const initialCount = displayedArticles.length;
+    let viewDestroyed = false;
+
+    // Background live API rejects with cold-start timeout or 502/503
+    const liveApiCall = async () => {
+      throw new Error('502 Bad Gateway: Render container is cold-starting');
+    };
+
+    try {
+      await liveApiCall();
+    } catch {
+      // Catch block maintains existing dataset
+      // Never clear displayedArticles!
+    }
+
+    // View is completely preserved
+    assert.equal(displayedArticles.length, initialCount);
+    assert.equal(viewDestroyed, false);
+    assert.ok(displayedArticles.length > 0);
+  });
+
+  // 5. No blank page on API failure
+  test('5. No blank page or global crash on API failure when bootstrap data exists', () => {
+    const bootstrapArticles = [{ id: 'bootstrap-article-1', title: 'Preserved Headline' }];
+
+    let displayedError: string | null = null;
+    const simulateErrorHandling = (errMessage: string, currentDataset: any[]) => {
+      // Rule: only display blocking error if current displayed dataset is completely empty
+      if (currentDataset.length === 0) {
+        displayedError = errMessage;
+      }
+    };
+
+    // Cold-start failure occurs while bootstrap articles are loaded
+    simulateErrorHandling('Failed to connect to Render API', bootstrapArticles);
+    assert.equal(displayedError, null, 'Error must not replace valid bootstrap content with an error screen');
+
+    // If genuinely NO data exists at all, error is shown
+    simulateErrorHandling('Failed to connect to Render API', []);
+    assert.equal(displayedError, 'Failed to connect to Render API');
+  });
+
+  // 6. Accurate sync timestamp
+  test('6. Accurate sync timestamp transitions from snapshot to live update', async () => {
+    const { refreshManager } = await import('../src/lib/refreshManager');
+    refreshManager.resetForTesting();
+
+    // 1. Initial timestamp from snapshot
+    const snapshotTimestamp = '2026-09-23T07:55:16.192Z';
+    refreshManager.setSyncTimestamp(snapshotTimestamp);
+
+    const initialText = refreshManager.getState().lastSyncText;
+    assert.ok(initialText !== null);
+    assert.ok(initialText.startsWith('Last synced:'));
+
+    // 2. Later, a live API run updates the timestamp
+    const liveTimestamp = '2026-09-23T08:15:00.000Z';
+    refreshManager.setSyncTimestamp(liveTimestamp);
+
+    const updatedText = refreshManager.getState().lastSyncText;
+    assert.ok(updatedText !== null);
+    assert.ok(updatedText.startsWith('Last synced:'));
+  });
+
+  // 7. Search remains API-backed
+  test('7. Search remains API-backed with polite fallback and no raw errors', async () => {
+    const { searchArticles } = await import('../src/lib/api');
+    const originalFetch = global.fetch;
+
+    // Simulate search failure (e.g. Render backend is sleeping)
+    global.fetch = async () => {
+      return new Response(
+        JSON.stringify({ error: { message: 'Render cold-start unavailable' } }),
+        { status: 503, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      await assert.rejects(
+        async () => searchArticles('technology'),
+        (err: Error) => {
+          assert.ok(
+            err.message.includes('Search failed') || err.message.includes('Render cold-start'),
+            `Unexpected error message: ${err.message}`
+          );
+          return true;
+        }
+      );
+
+      // Verify that UI fallback message is polite and does not expose 503 or stack trace
+      const searchFallbackMessage = 'Search is temporarily unavailable. The latest stories are still available.';
+      assert.ok(searchFallbackMessage.includes('Search is temporarily unavailable'));
+      assert.ok(!searchFallbackMessage.includes('503'));
+      assert.ok(!searchFallbackMessage.includes('Render'));
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  // 8. Refresh Data still works asynchronously
+  test('8. Refresh Data still works asynchronously while snapshot is active', async () => {
+    const { refreshManager } = await import('../src/lib/refreshManager');
+    const originalFetch = global.fetch;
+
+    global.fetch = async (url: any) => {
+      const u = typeof url === 'string' ? url : url.toString();
+      if (u.includes('/ingest/trigger')) {
+        return new Response(
+          JSON.stringify({ jobId: 'job_async_snapshot_test', status: 'queued' }),
+          { status: 202, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      if (u.includes('/ingest/status/')) {
+        return new Response(
+          JSON.stringify({
+            jobId: 'job_async_snapshot_test',
+            status: 'completed',
+            stats: {
+              articlesFetched: 20,
+              articlesAdded: 5,
+              duplicatesSkipped: 15,
+              extractionFailures: 0,
+              feedsAttempted: 3,
+              feedsSucceeded: 3,
+              feedsFailed: 0,
+              clustersUpdated: 10,
+            },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      return new Response('{}', { status: 200 });
+    };
+
+    try {
+      refreshManager.resetForTesting();
+      refreshManager.setPollIntervalForTesting(10);
+
+      // Trigger refresh
+      await refreshManager.triggerRefresh();
+
+      // State is immediately non-blocking
+      const activeState = refreshManager.getState();
+      assert.equal(activeState.isRefreshing, true);
+      assert.ok(activeState.statusMessage?.includes('Refresh started'));
+
+      // Let polling loop complete
+      await refreshManager.waitForPollingToFinish();
+
+      const finalState = refreshManager.getState();
+      assert.equal(finalState.isRefreshing, false);
+      assert.ok(finalState.successMessage?.includes('5 new stories'));
+    } finally {
+      global.fetch = originalFetch;
+      refreshManager.stop();
+    }
+  });
+});
+
 

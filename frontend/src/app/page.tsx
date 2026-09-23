@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { fetchTimeline, fetchArticles } from '@/lib/api';
+import { fetchTimeline, fetchArticles, fetchBootstrapData } from '@/lib/api';
 import { TimelineItem, Article } from '@/lib/types';
 import { BreakingStrip } from '@/components/news/BreakingStrip';
 import { HeroSection } from '@/components/news/HeroSection';
@@ -20,14 +20,13 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load initial editorial feed & timeline data from real Node.js REST API
-  const loadData = useCallback(async (isInitial = false) => {
+  // Revalidate editorial feed & timeline data from real Node.js REST API in background
+  const loadData = useCallback(async (showSkeleton = false) => {
     try {
-      if (isInitial) {
+      if (showSkeleton) {
         setError(null);
         setIsLoading(true);
       }
-      // Fetch generous batch of articles so all category sections & latest grid are populated with real content
       const [timelineRes, articlesRes] = await Promise.all([
         fetchTimeline(),
         fetchArticles({ limit: 50, offset: 0 }),
@@ -39,22 +38,41 @@ export default function HomePage() {
       if (articlesRes?.data) {
         setArticles(articlesRes.data);
       }
-      if (isInitial) {
-        setError(null);
-      }
+      setError(null);
     } catch (err: any) {
-      if (isInitial) {
-        setError(err?.message || 'Failed to load news content. Please verify that the backend API is running.');
-      }
+      // Never replace genuine displayed data with an error screen
+      setArticles((currentArticles) => {
+        if (currentArticles.length === 0) {
+          setError(err?.message || 'Failed to load news content. Please verify that the backend API is running.');
+        }
+        return currentArticles;
+      });
     } finally {
-      if (isInitial) {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    loadData(true);
+    let isSubscribed = true;
+
+    // Fast-path: immediately hydrate with pre-rendered genuine bootstrap snapshot
+    fetchBootstrapData().then((bootstrap) => {
+      if (!isSubscribed || !bootstrap) return;
+      if (bootstrap.articles && bootstrap.articles.length > 0) {
+        setArticles((prev) => (prev.length === 0 ? bootstrap.articles : prev));
+      }
+      if (bootstrap.timeline?.data && bootstrap.timeline.data.length > 0) {
+        setTimelineItems((prev) => (prev.length === 0 ? bootstrap.timeline.data : prev));
+      }
+      setIsLoading(false);
+    });
+
+    // Background revalidation: fetch live API data without blocking reader
+    loadData(false);
+
+    return () => {
+      isSubscribed = false;
+    };
   }, [loadData]);
 
   // Listen for global ingestion refresh event triggered from Header or external triggers

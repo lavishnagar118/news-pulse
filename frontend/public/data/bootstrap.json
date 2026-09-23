@@ -1,0 +1,1253 @@
+{
+  "generatedAt": "2026-09-23T07:55:16.192Z",
+  "latestSync": {
+    "stats": {
+      "duplicatesSkipped": 62,
+      "extractionFailures": 0,
+      "feedsSucceeded": 3,
+      "feedsAttempted": 3,
+      "feedsFailed": 0,
+      "articlesAdded": 0,
+      "clustersUpdated": 148,
+      "articlesFetched": 62
+    },
+    "status": "completed",
+    "error": null,
+    "completedAt": "2026-09-23T07:55:16.192Z",
+    "jobId": "job_1790150107303_zgn8mf",
+    "startedAt": "2026-09-23T07:55:16.192Z"
+  },
+  "articles": [
+    {
+      "category": "General",
+      "publishedAt": "2026-09-23T07:31:58.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/23/at-least-11-people-killed-in-south-africa-township-shooting?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "At least 11 people killed in South Africa township shooting",
+      "clusterId": "6ab385e1d3eb721e9a1ddea5",
+      "id": "6ab38549d3eb721e9a1ddccd",
+      "summary": "Armed men open fire at a house party in a Durban township, killing a pregnant woman and 10 others.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/SA_KWA-NATAL_MAP-1790147741.png?resize=1920%2C1080&quality=80"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-23T07:18:54.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/23/pakistans-new-drone-deal-is-with-trump-backed-firm-also-selling-to-india?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Pakistan’s new drone deal is with Trump-backed firm also selling to India",
+      "clusterId": "6ab385e1d3eb721e9a1ddea6",
+      "id": "6ab3854ad3eb721e9a1ddcce",
+      "summary": "The company's cofounder is also an ex-Israeli soldier. Pakistan does not recognise Israel.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/045ce01c-bc3f-4ff7-845a-24893e48cc3b-1790078066.jpg?resize=1600%2C1080"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-23T07:03:30.000Z",
+      "url": "https://www.aljazeera.com/video/doha-debates/2026/9/23/whos-future-is-it-china-or-the-west?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "WHO’S FUTURE IS IT: CHINA OR THE WEST?",
+      "clusterId": "6ab385e1d3eb721e9a1ddea7",
+      "id": "6ab3854cd3eb721e9a1ddccf",
+      "summary": "As global power shifts, how different are these two visions, and does the future belong to just one?",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/image-1790146716.jpg?resize=1920%2C1080&quality=80"
+    },
+    {
+      "category": "General",
+      "publishedAt": "2026-09-23T07:02:52.000Z",
+      "url": "https://www.bbc.co.uk/news/articles/crgjqxzl097eo",
+      "source": "BBC News",
+      "title": "Eleven killed in mass shooting at house in South Africa",
+      "clusterId": "6ab385e1d3eb721e9a1ddea5",
+      "id": "6ab3853cd3eb721e9a1ddcbf",
+      "summary": "One of those killed is believed to be a pregnant woman, police said.",
+      "imageUrl": "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/5581/live/0a1fdd60-b716-11f1-8d21-19ad84e0e822.jpg"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-23T06:59:03.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/23/pakistan-seals-islamabad-roads-before-protests-for-imran-khans-release?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Pakistan seals roads to Islamabad before protests for Imran Khan’s release",
+      "clusterId": "6ab385e1d3eb721e9a1ddea8",
+      "id": "6ab3854dd3eb721e9a1ddcd0",
+      "summary": "Police close major highways into Islamabad as supporters of jailed former prime minister plan to march into the capital.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/2026-02-13T142257Z_780097571_RC20LJA6DA5A_RTRMADP_3_PAKISTAN-POLITICS-KHAN-1790144644_17e247-1790146718.jpg?resize=1200%2C630&quality=80"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-23T06:47:49.000Z",
+      "url": "https://www.bbc.co.uk/news/articles/c6790yrgzq25o",
+      "source": "BBC News",
+      "title": "Trump administration accuses banned media outlets of 'falsehoods' ahead of court hearing",
+      "clusterId": "6ab385e1d3eb721e9a1ddea9",
+      "id": "6ab3853bd3eb721e9a1ddcbe",
+      "summary": "The US Justice Department's response to a lawsuit filed by CNN, Politico and MS NOW also cites national security.",
+      "imageUrl": "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/5038/live/fc68f0f0-b718-11f1-8d21-19ad84e0e822.jpg"
+    },
+    {
+      "category": "General",
+      "publishedAt": "2026-09-23T06:13:35.000Z",
+      "url": "https://www.npr.org/2026/09/23/nx-s1-5978589/hurricane-polo",
+      "source": "NPR News",
+      "title": "Category 5 Hurricane Polo is 'one of the strongest storms ever'",
+      "clusterId": "6ab385e1d3eb721e9a1ddeaa",
+      "id": "6ab38543d3eb721e9a1ddcc7",
+      "summary": "Hurricane Polo has grown into one of the most powerful Pacific cyclones in decades, and it was expected to skirt Mexico's southwestern coast as a Category 5 storm.",
+      "imageUrl": "https://npr.brightspotcdn.com/dims3/default/strip/false/crop/2352x1323+0+123/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2F83%2F5b%2F223069d740f8a0887f1aeb468d46%2Fap26264659913202.jpg"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-23T06:12:56.000Z",
+      "url": "https://www.bbc.co.uk/news/articles/ck62m1631d7po",
+      "source": "BBC News",
+      "title": "US and Iran hold first talks since June after Trump's 'annihilation' threat",
+      "clusterId": "6ab385e1d3eb721e9a1ddeab",
+      "id": "6ab38538d3eb721e9a1ddcbb",
+      "summary": "The talks are the first since a ceasefire collapsed in June, with the sides exchanging fire intermittently.",
+      "imageUrl": "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/94af/live/1e4085d0-b714-11f1-8d21-19ad84e0e822.jpg"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-23T05:34:40.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/23/trump-rallies-shield-of-the-americas-coalition-against-drug-cartels?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Trump rallies Latin American allies against drug cartels",
+      "clusterId": "6ab385e1d3eb721e9a1ddeac",
+      "id": "6ab3854dd3eb721e9a1ddcd1",
+      "summary": "US-led Shield of the Americas coalition backs sanctions against crime groups after Trump urges stronger action.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/reuters_6ab33814-1790130196.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-23T05:26:31.000Z",
+      "url": "https://www.npr.org/2026/09/23/g-s1-144623/trump-affordable-care-act",
+      "source": "NPR News",
+      "title": "Trump administration to remove 760,000 Affordable Care Act enrollees over fraud claims",
+      "clusterId": "6ab385e1d3eb721e9a1ddead",
+      "id": "6ab38545d3eb721e9a1ddcc8",
+      "summary": "White House officials allege these individuals were fraudulently enrolled in the program or do not exist. Vice President Vance said the move would save $2.2 billion.",
+      "imageUrl": "https://npr.brightspotcdn.com/dims3/default/strip/false/crop/5788x3256+0+302/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2F1b%2Fd7%2Fc69d78194456b0ed8381e4b535b4%2Fap26265610454185.jpg"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-23T05:07:26.000Z",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/9/23/cooperation-is-the-goal-at-the-unga-but-is-it-possible?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Cooperation is the goal at the UNGA, but is it possible?",
+      "clusterId": "6ab385e1d3eb721e9a1ddeae",
+      "id": "6ab3854ed3eb721e9a1ddcd2",
+      "summary": "Debate opened at the UN General Assembly and leaders from across the world made their arguments.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/image-1790139982.jpg?resize=1920%2C1080&quality=80"
+    },
+    {
+      "category": "General",
+      "publishedAt": "2026-09-23T04:58:08.000Z",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/9/23/six-year-old-sets-rubiks-cube-world-record-twice-in-three-days?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Six-year-old sets Rubik’s Cube world record twice in three days",
+      "clusterId": "6ab385e1d3eb721e9a1ddeaf",
+      "id": "6ab3854ed3eb721e9a1ddcd3",
+      "summary": "Six-year-old Lian Yunzhi broke the women’s Rubik’s Cube world record twice in three days, averaging under 4.5 seconds.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/image-1790139449.jpg?resize=1920%2C1080&quality=80"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-23T04:42:15.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/23/us-iran-hold-mediated-unga-talks-on-ending-war-opening-strait-of-hormuz?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "US, Iran hold mediated UNGA talks on ending war, opening Strait of Hormuz",
+      "clusterId": "6ab385e1d3eb721e9a1ddeab",
+      "id": "6ab3854fd3eb721e9a1ddcd4",
+      "summary": "Tehran ties diplomatic progress to lifting shipping blockades and unfreezing assets during New York negotiations.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/2026-09-22T195848Z_1311607095_RC2JONACONJH_RTRMADP_3_USA-TRUMP-GULF-1790143066.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "General",
+      "publishedAt": "2026-09-23T04:08:17.000Z",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/9/23/sri-lanka-convicts-15-people-over-2019-easter-day-bombings?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Sri Lanka convicts 15 people over 2019 Easter Day bombings",
+      "clusterId": "6ab385e1d3eb721e9a1ddeb0",
+      "id": "6ab38550d3eb721e9a1ddcd5",
+      "summary": "Fifteen people have been convicted over Sri Lanka’s 2019 Easter Sunday bombings, which killed 279 people.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/image-1790136434.jpg?resize=1620%2C1080&quality=80"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-23T03:08:51.000Z",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/9/23/aje-onl-nf_venezuelans-protest-delcy-rodriguez-at-unga-220926?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Venezuelans protest interim leader Delcy Rodriguez at UN headquarters",
+      "clusterId": "6ab385e1d3eb721e9a1ddeb1",
+      "id": "6ab38550d3eb721e9a1ddcd6",
+      "summary": "Venezuelans protested in New York against interim President Delcy Rodriguez's participation in the UN General Assembly.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/image-1790132915.jpg?resize=1920%2C1080&quality=80"
+    },
+    {
+      "category": "Technology",
+      "publishedAt": "2026-09-23T02:50:36.000Z",
+      "url": "https://www.aljazeera.com/economy/2026/9/23/wall-streets-nasdaq-hits-all-time-high-as-ai-frenzy-gathers-pace?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Wall Street’s Nasdaq hits all-time high as AI frenzy gathers pace",
+      "clusterId": "6ab385e1d3eb721e9a1ddeb2",
+      "id": "6ab38551d3eb721e9a1ddcd7",
+      "summary": "Investors shrug off AI safety concerns and Iran war, sending market to a new peak.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/2026-09-15T095842Z_665351690_RC2LJNACQ7C4_RTRMADP_3_USA-STOCKS-MIDTERM-1790124313_656288-1790128507.jpg?resize=1200%2C630&quality=80"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-23T02:36:32.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/23/canada-pledges-aid-for-palestine-as-uk-and-france-demand-action-at-unga?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "France rebukes world over Gaza as Canada, UK back Palestinian state at UNGA",
+      "clusterId": "6ab385e1d3eb721e9a1ddeb3",
+      "id": "6ab38552d3eb721e9a1ddcd8",
+      "summary": "France's Macron says suffering in Gaza should 'shame all of us' as Canada's Carney pledges $71m for two-state efforts.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/afp_6ab3496a408e-1790134634.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-23T02:24:01.000Z",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/9/23/uk-prime-minister-vows-not-to-stand-by-as-palestinians-suffer?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "UK Prime Minister vows not to ‘stand by’ as Palestinians suffer",
+      "clusterId": "6ab385e1d3eb721e9a1ddeb4",
+      "id": "6ab38553d3eb721e9a1ddcd9",
+      "summary": "UK PM Burnham condemned Israel’s war on Gaza, and explains why the UK sanctioned illegal Israeli settlements.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/image-1790130216.jpg?resize=1920%2C1080&quality=80"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-23T02:00:11.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/23/south-sudan-dissolves-government-ahead-of-first-ever-national-elections?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "South Sudan’s Kiir dissolves government ahead of first national elections",
+      "clusterId": "6ab385e1d3eb721e9a1ddeb5",
+      "id": "6ab38553d3eb721e9a1ddcda",
+      "summary": "President's move clears hurdles to long delayed election and raises concern he can now wield unchecked power.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/AP26259436622950-1790122092.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "Health",
+      "publishedAt": "2026-09-23T01:33:01.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/23/in-senegal-a-mothers-ordeal-exposes-a-health-system-under-strain?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "In Senegal, a mother’s ordeal exposes a health system under strain",
+      "clusterId": "6ab385e1d3eb721e9a1ddeb6",
+      "id": "6ab38554d3eb721e9a1ddcdb",
+      "summary": "A difficult birth offers a glimpse into the pressures facing Senegal’s public healthcare system.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/AFP__20210824__9LL6BM__v2__HighRes__SenegalHealthVirusHospitalEmergency-1790067263.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-23T01:25:47.000Z",
+      "url": "https://www.bbc.co.uk/news/videos/cq5y4zpn655ko",
+      "source": "BBC News",
+      "title": "Watch: Key moments from Andy Burnham's first UN speech",
+      "clusterId": "6ab385e1d3eb721e9a1ddeb4",
+      "id": "6ab38540d3eb721e9a1ddcc4",
+      "summary": "In his first speech to the UN as UK prime minister, Burnham highlighted the risks posed by Russian disinformation.",
+      "imageUrl": "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/cf63/live/3a65a3f0-b712-11f1-a430-4d16ee157c41.jpg"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-23T01:20:39.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/23/zelenskyy-says-ukraine-ready-for-energy-truce-with-russia-after-trump-talks?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Zelenskyy says Ukraine ready for energy truce with Russia after Trump talks",
+      "clusterId": "6ab385e1d3eb721e9a1ddeb7",
+      "id": "6ab38555d3eb721e9a1ddcdc",
+      "summary": "Ukraine leader says Kyiv is ready to stop strikes on Russian facilities if Moscow halts attacks on its energy system.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/AFP__20260922__C92T693__v1__HighRes__MeetingBetweenUkrainianPresidentVolodymyrZelens-1790114322.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-23T01:11:06.000Z",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/9/23/iranian-president-masoud-pezeshkian-arrives-in-new-york-for-unga?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Iranian President Masoud Pezeshkian arrives in New York for UNGA",
+      "clusterId": "6ab385e1d3eb721e9a1ddeb8",
+      "id": "6ab38556d3eb721e9a1ddcdd",
+      "summary": "Iranian President Masoud Pezeshkian has arrived in New York as the US-Iran war continues.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/image-1790125761.jpg?resize=1920%2C1080&quality=80"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-23T01:01:17.000Z",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/9/23/uk-pm-burnham-condemns-repulsive-russian-electoral-interference?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "UK PM Burnham condemns ‘repulsive’ Russian electoral interference",
+      "clusterId": "6ab385e1d3eb721e9a1ddeb4",
+      "id": "6ab38557d3eb721e9a1ddcde",
+      "summary": "UK Prime Minister Andy Burnham addressed the UN General Assembly, accusing Russia of information warfare.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/image-1790125262.jpg?resize=1920%2C1080&quality=80"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-23T00:00:00.000Z",
+      "url": "https://www.aljazeera.com/news/liveblog/2026/9/23/iran-war-live-trump-confirms-very-good-meeting-with-iran-at-un?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Iran war live: Trump threat ‘demonstrates America’s strategic dead end’",
+      "clusterId": "6ab385e1d3eb721e9a1ddeb9",
+      "id": "6ab38557d3eb721e9a1ddcdf",
+      "summary": "Tehran says latest threats by US president 'demonstrate America’s strategic dead end' to the nearly seven-month war.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/GettyImages-2295261275-1789998469.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-22T23:46:06.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/22/iran-flights-to-baghdad-muscat-cancelled-ahead-of-us-aviation-sanctions?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Iran cancels Baghdad, Muscat flights as US aviation sanctions take effect",
+      "clusterId": "6ab385e1d3eb721e9a1ddeba",
+      "id": "6ab38558d3eb721e9a1ddce0",
+      "summary": "Iran official says Baghdad and Muscat airports will not accept Iranian flights from midnight on Wednesday.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/reuters_6ab2fdf4-1790115316.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "Health",
+      "publishedAt": "2026-09-22T23:36:12.000Z",
+      "url": "https://www.bbc.co.uk/news/articles/cr6241825757o",
+      "source": "BBC News",
+      "title": "US judge blocks deportation of DoorDash driver shot by ICE",
+      "clusterId": "6ab385e1d3eb721e9a1ddebb",
+      "id": "6ab3853fd3eb721e9a1ddcc2",
+      "summary": "The delivery driver was transferred from a hospital to a detention centre after the shooting on Sunday.",
+      "imageUrl": "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/97eb/live/8e6f0380-b5ee-11f1-aff1-eb6baa3fda4f.png"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-22T23:20:17.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/22/kamala-harris-campaigns-with-abdul-el-sayed-to-unify-democratic-voters?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Kamala Harris campaigns with Abdul El-Sayed to unify Democratic voters",
+      "clusterId": "6ab385e1d3eb721e9a1ddebc",
+      "id": "6ab38559d3eb721e9a1ddce1",
+      "summary": "The former vice president joins Abdul El-Sayed in Detroit to bolster Democratic unity in swing-state Michigan.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/afp_6ab2e9fd284a-1790110205.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-22T22:48:56.000Z",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/9/22/unga-day-1-us-and-iran-hold-talks-despite-trumps-threat?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "UNGA Day 1: US and Iran hold talks despite Trump’s threat",
+      "clusterId": "6ab385e1d3eb721e9a1ddeab",
+      "id": "6ab3855ad3eb721e9a1ddce2",
+      "summary": "The US and Iran hold talks on UNGA’s first day, despite Trump threatening to ‘annihilate’ Iran in his opening address.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/image-1790117328.jpg?resize=1920%2C1080&quality=80"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-22T22:33:44.000Z",
+      "url": "https://www.bbc.co.uk/news/videos/cqkgx8ynj8zko",
+      "source": "BBC News",
+      "title": "Watch: Threats, deals and passionate speeches at UNGA event",
+      "clusterId": "6ab385e1d3eb721e9a1ddebd",
+      "id": "6ab38541d3eb721e9a1ddcc5",
+      "summary": "Delegations from across the world attended the United Nations General Assembly in New York.",
+      "imageUrl": "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/25f4/live/f7bcd0d0-b6d2-11f1-bc1f-3f186ca4140c.jpg"
+    },
+    {
+      "category": "General",
+      "publishedAt": "2026-09-22T22:10:25.000Z",
+      "url": "https://www.aljazeera.com/economy/2026/9/22/celebrities-at-the-pentagon-how-unusual-was-the-paul-brothers-visit?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Celebrities at the Pentagon: How unusual was the Paul brothers’ visit?",
+      "clusterId": "6ab385e1d3eb721e9a1ddebe",
+      "id": "6ab3855bd3eb721e9a1ddce3",
+      "summary": "Logan and Jake Paul face social media backlash after Pentagon visit with Pete Hegseth.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/9954505-1790091593.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-22T22:07:50.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/22/us-republican-calls-for-probe-into-donald-trump-jrs-business-dealings?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "US Republican calls for probe into Donald Trump Jr’s business dealings",
+      "clusterId": "6ab385e1d3eb721e9a1ddebf",
+      "id": "6ab3855bd3eb721e9a1ddce4",
+      "summary": "US Senator John Curtis's letter marks a rare effort by a member of the president's own party to hold him accountable.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/getty_6ab2ee8581-1790111365.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "Technology",
+      "publishedAt": "2026-09-22T22:03:48.000Z",
+      "url": "https://www.bbc.co.uk/news/videos/cwe8ejvv0leno",
+      "source": "BBC News",
+      "title": "Rare look at the remote engine rooms powering China's AI ambitions",
+      "clusterId": "6ab385e1d3eb721e9a1ddec0",
+      "id": "6ab3853fd3eb721e9a1ddcc3",
+      "summary": "The BBC is in Inner Mongolia where dozen of Chinese data centres are being constructed, as the country aims to lead the world in artificial intelligence.",
+      "imageUrl": "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/d1ba/live/c4418760-b64a-11f1-bc1f-3f186ca4140c.jpg"
+    },
+    {
+      "category": "General",
+      "publishedAt": "2026-09-22T21:47:51.000Z",
+      "url": "https://www.npr.org/2026/09/22/nx-s1-5977673/questions-remain-after-grand-jury-declines-indictment-in-nolan-wells-death",
+      "source": "NPR News",
+      "title": "Questions remain after grand jury declines indictment in Nolan Wells' death",
+      "clusterId": "6ab385e1d3eb721e9a1ddec1",
+      "id": "6ab38546d3eb721e9a1ddcc9",
+      "summary": "The Black Mississippi teen's family questions whether his race contributed to his July 4th death on an island off the Mississippi coast.",
+      "imageUrl": "https://npr.brightspotcdn.com/dims3/default/strip/false/crop/8119x4567+0+423/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2F9a%2F53%2F5b4a4c114f59b3e681897cd191d7%2Fap26211716422882.jpg"
+    },
+    {
+      "category": "General",
+      "publishedAt": "2026-09-22T21:37:28.000Z",
+      "url": "https://www.npr.org/2026/09/22/nx-s1-5978033/braden-peters-clavicular-looksmaxxing-rape-accusation",
+      "source": "NPR News",
+      "title": "Girl accuses Braden Peters, social media influencer known as 'Clavicular,' of rape",
+      "clusterId": "6ab385e1d3eb721e9a1ddec2",
+      "id": "6ab38547d3eb721e9a1ddcca",
+      "summary": "The allegations claim Braden Peters, also known as Clavicular, had non-consensual sex with the 17-year-old female victim after plying her with alcohol. Peters' representative denies the charges.",
+      "imageUrl": "https://npr.brightspotcdn.com/dims3/default/strip/false/crop/4000x2250+0+647/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2F68%2Fd9%2F76f69d494ebd9f926c99984ad5c8%2Fgettyimages-2282996690.jpg"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-22T21:36:55.000Z",
+      "url": "https://www.bbc.co.uk/news/articles/c9dr74g32g8go",
+      "source": "BBC News",
+      "title": "US to build two military bases in Greenland under new deal with Denmark",
+      "clusterId": "6ab385e1d3eb721e9a1ddec3",
+      "id": "6ab3853ad3eb721e9a1ddcbd",
+      "summary": "The defence deal signed at the UN General Assembly also re-affirms Denmark's sovereignty over its semi-autonomous Arctic territory.",
+      "imageUrl": "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/ad23/live/08b181f0-b6b6-11f1-8448-334c53ba4316.jpg"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-22T21:31:01.000Z",
+      "url": "https://www.npr.org/2026/09/22/nx-s1-5977768/trump-tv-media-ban-white-house",
+      "source": "NPR News",
+      "title": "White House launches 'Trump TV' after ban on major news outlets",
+      "clusterId": "6ab385e1d3eb721e9a1ddec4",
+      "id": "6ab38548d3eb721e9a1ddccb",
+      "summary": "Days after President Trump barred reporters from three major news outlets from the White House, the administration has launched a 24/7 YouTube channel promising to put its \"biggest moments all in one place.\"",
+      "imageUrl": "https://npr.brightspotcdn.com/dims3/default/strip/false/crop/3744x2106+0+195/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2F14%2Fce%2Fe466c40e4d439fb9618150b46a0d%2Fgettyimages-2269452995.jpg"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-22T21:30:51.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/22/palestinian-americans-meet-us-lawmakers-as-trump-seeks-2-8bn-for-israel?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Palestinian Americans meet US lawmakers as Trump seeks $2.8bn for Israel",
+      "clusterId": "6ab385e1d3eb721e9a1ddec5",
+      "id": "6ab3855cd3eb721e9a1ddce5",
+      "summary": "Organisers say more than 300 constituents met with House and Senate members from 26 states to demand US policy shift.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/IMG_0308-1790101956.jpeg?resize=1920%2C1440"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-22T20:59:00.000Z",
+      "url": "https://www.bbc.co.uk/news/articles/c8r4v7n6py97o",
+      "source": "BBC News",
+      "title": "How Ceuta, football and Israel are shaping Morocco's election",
+      "clusterId": "6ab385e1d3eb721e9a1ddec6",
+      "id": "6ab3853dd3eb721e9a1ddcc0",
+      "summary": "Young voters are being courted with football slogans, promises of jobs and anti-Israel rallying calls.",
+      "imageUrl": "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/ea6d/live/eb5cde20-b6af-11f1-bc1f-3f186ca4140c.jpg"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-22T19:25:05.000Z",
+      "url": "https://www.npr.org/2026/09/22/nx-s1-5977646/trump-dc-arch-military-complex-questions",
+      "source": "NPR News",
+      "title": "Trump's D.C. arch is now a military complex. Here's how that complicates things",
+      "clusterId": "6ab385e1d3eb721e9a1ddec7",
+      "id": "6ab38548d3eb721e9a1ddccc",
+      "summary": "The future of Trump's D.C. arch was already fraught. Then he rebranded it as a military complex. Experts say that only raises more legal and logistical questions.",
+      "imageUrl": "https://npr.brightspotcdn.com/dims3/default/strip/false/crop/6000x3375+0+76/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2Fcf%2F88%2F2dd440194230ba71770b742b97a0%2Fgettyimages-2283779980.jpg"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-22T19:15:57.000Z",
+      "url": "https://www.bbc.co.uk/news/videos/cxly57mv4767o",
+      "source": "BBC News",
+      "title": "Burnham 'gets it' says Trump, as the two leaders meet for first time",
+      "clusterId": "6ab385e1d3eb721e9a1ddec8",
+      "id": "6ab38542d3eb721e9a1ddcc6",
+      "summary": "Donald Trump says he can do business with Andy Burnham at their first face-to-face meeting in New York, but criticises the \"terrible\" Chagos deal.",
+      "imageUrl": "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/0af9/live/e93b1d50-b6b4-11f1-8448-334c53ba4316.jpg"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-22T19:06:06.000Z",
+      "url": "https://www.bbc.co.uk/news/articles/c6dj4k98107do",
+      "source": "BBC News",
+      "title": "Ukraine anger as EU removes Russian oligarchs from sanctions list",
+      "clusterId": "6ab385e1d3eb721e9a1ddec9",
+      "id": "6ab3853ed3eb721e9a1ddcc1",
+      "summary": "Alisher Usmanov and Mikhail Fridman both have close ties to President Putin, and Kyiv said the move sent Moscow the wrong signals.",
+      "imageUrl": "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/9373/live/8fd92fe0-b6b4-11f1-a430-4d16ee157c41.jpg"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-22T17:35:01.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/22/echr-hears-how-10-children-went-missing-after-russia-annexed-crimea?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "ECHR hears how 10 children went missing after Russia annexed Crimea",
+      "clusterId": "6ab385e1d3eb721e9a1ddeca",
+      "id": "6ab2bff84b8dd7dfb7d1fdf3",
+      "summary": "Ukrainians aged between one and five were taken from childcare institutions and put up for adoption, court hears.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/2014-03-14T120000Z_686309849_GM1EA3E1HCK01_RTRMADP_3_UKRAINE-CRISIS-1790085253.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "General",
+      "publishedAt": "2026-09-22T17:02:36.000Z",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/9/22/turkiye-school-shooting-leaves-11-pupils-wounded?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Turkiye school shooting leaves 11 pupils wounded",
+      "clusterId": "6ab385e1d3eb721e9a1ddecb",
+      "id": "6ab2bd164b8dd7dfb7d1fcfe",
+      "summary": "Eleven pupils were wounded after a student opened fire near a secondary school in Manisa, western Turkiye",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/image-1790096546.jpg?resize=1920%2C1080&quality=80"
+    },
+    {
+      "category": "Health",
+      "publishedAt": "2026-09-22T16:57:55.000Z",
+      "url": "https://www.bbc.co.uk/sport/cycling/articles/c63eqyvdndwdo",
+      "source": "BBC News",
+      "title": "Cyclist who dressed as man to avoid Taliban wins silver medal",
+      "clusterId": "6ab385e1d3eb721e9a1ddecc",
+      "id": "6ab2bd034b8dd7dfb7d1fcf9",
+      "summary": "Afghan cyclist Fariba Hashimi wins silver in the women's road race at the Asian Games, having fled oppression in her home country to pursue a sporting dream.",
+      "imageUrl": "https://ichef.bbci.co.uk/ace/branded_sport/1200/cpsprodpb/ebad/live/b5f04860-b69d-11f1-ba3d-1d5c8a47f823.png"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-22T16:55:39.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/22/erdogan-slams-israels-genocidal-mindset-in-blistering-un-address?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Erdogan slams Israel’s ‘genocidal mindset’ in blistering UN address",
+      "clusterId": "6ab385e1d3eb721e9a1ddecd",
+      "id": "6ab2bd174b8dd7dfb7d1fcff",
+      "summary": "Turkish leader says UN has been forced into 'dysfunction' and was 'bleeding out' in Palestine, Lebanon, Sudan.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/afp_6ab2a909e015-1790093577.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "Health",
+      "publishedAt": "2026-09-22T16:54:41.000Z",
+      "url": "https://www.bbc.co.uk/news/articles/cwjdvgx77n0zo",
+      "source": "BBC News",
+      "title": "Top South African policeman charged with sexual offences",
+      "clusterId": "6ab385e1d3eb721e9a1ddece",
+      "id": "6ab2bd034b8dd7dfb7d1fcf8",
+      "summary": "Shadrack Sibiya, who has made no comment, is alleged to have groomed a 16-year-old and raped an 18-year-old.",
+      "imageUrl": "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/46aa/live/d5084a60-7f69-11f1-8812-63adb81ec20b.jpg"
+    },
+    {
+      "category": "General",
+      "publishedAt": "2026-09-22T16:42:23.000Z",
+      "url": "https://www.bbc.co.uk/news/articles/cqm27jen9r23o",
+      "source": "BBC News",
+      "title": "'I have never felt heat like that' - a survivor on watching 33 cellmates die in Nigeria",
+      "clusterId": "6ab385e1d3eb721e9a1ddecf",
+      "id": "6ab2bd054b8dd7dfb7d1fcfb",
+      "summary": "The BBC goes inside the prison where prisoners were trapped in stifling, cramped conditions.",
+      "imageUrl": "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/7808/live/dd755fe0-b672-11f1-a430-4d16ee157c41.png"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-22T16:35:14.000Z",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/9/22/war-crime-jordans-king-slams-israeli-west-bank-expansion?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "‘War crime’: Jordan’s king slams Israeli West Bank expansion",
+      "clusterId": "6ab385e1d3eb721e9a1dded0",
+      "id": "6ab2bd184b8dd7dfb7d1fd00",
+      "summary": "Jordan's King Abdullah II decried Israeli settlements in the occupied West Bank as a strategy of ‘forced displacement.'",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/image-1790094887.jpg?resize=1920%2C1080&quality=80"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-22T16:31:58.000Z",
+      "url": "https://www.aljazeera.com/features/2026/9/22/fifteen-guilty-in-2019-sri-lanka-easter-bombings-what-the-verdict-says?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Fifteen guilty in 2019 Sri Lanka Easter bombings: What the verdict says",
+      "clusterId": "6ab385e1d3eb721e9a1ddeb0",
+      "id": "6ab2bd194b8dd7dfb7d1fd01",
+      "summary": "The suicide bombings were the deadliest attacks in the country since the end of its civil war in 2009.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/AP26265212684916-1790090780.jpg?resize=1200%2C630"
+    },
+    {
+      "category": "Technology",
+      "publishedAt": "2026-09-22T16:29:37.000Z",
+      "url": "https://www.npr.org/2026/09/22/nx-s1-5977731/inside-a-modern-slavery-situation-where-cyber-scammers-are-victims-themselves",
+      "source": "NPR News",
+      "title": "Inside a 'modern slavery situation' where cyber scammers are victims themselves",
+      "clusterId": "6ab385e1d3eb721e9a1dded1",
+      "id": "6ab2bd144b8dd7dfb7d1fcfc",
+      "summary": "Wired 's Andy Greenberg explains how a cybercrime operation in Southeast Asia trapped computer engineers into defrauding victims of billions of dollars. Plus, he discusses the scam involving Fresh Air.",
+      "imageUrl": null
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-22T16:18:48.000Z",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/9/22/trump-my-honour-to-settle-eight-wars-including-war-in-gaza?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Trump: ‘My honour to settle eight wars’ including ‘war in Gaza’",
+      "clusterId": "6ab385e1d3eb721e9a1dded2",
+      "id": "6ab2bd194b8dd7dfb7d1fd02",
+      "summary": "Speaking at the UN General Assembly, US President Donald Trump claimed he helped end the war in Gaza.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/Screenshot-2026-09-22-at-17.16.58-1790093871.png?resize=1200%2C630"
+    },
+    {
+      "category": "Science",
+      "publishedAt": "2026-09-22T16:17:37.000Z",
+      "url": "https://www.npr.org/2026/09/22/nx-s1-5977044/fire-amoeba-extremophile-eukaryote-life",
+      "source": "NPR News",
+      "title": "This 'fire amoeba' pushes the limit of what's possible for complex life",
+      "clusterId": "6ab385e1d3eb721e9a1dded3",
+      "id": "6ab2bd154b8dd7dfb7d1fcfd",
+      "summary": "Scientists have found a species they've named the fire amoeba, which is capable of reproducing at 145°F and continuing to move up to temperatures of 147°F — a record for complex eukaryotic life.",
+      "imageUrl": "https://npr.brightspotcdn.com/dims3/default/strip/false/crop/1021x574+0+0/resize/1400/quality/85/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2F98%2F97%2F5d98a1b647ebab46a93dc60e8c2c%2Fcopy-of-cell-alt-cover.jpg"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-22T15:49:12.000Z",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/9/22/unga-2026-can-the-un-stop-wars?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "UNGA 2026: Can the UN stop wars?",
+      "clusterId": "6ab385e1d3eb721e9a1dded4",
+      "id": "6ab2bd1a4b8dd7dfb7d1fd03",
+      "summary": "Al Jazeera asked people in Bangladesh, Gaza and Nigeria what they think of the UN’s role in resolving conflicts.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/image-1790092028.jpg?resize=1920%2C1080&quality=80"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-22T15:33:22.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/22/trump-tv-can-the-us-president-bypass-mainstream-media?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Trump follows in Hugo Chavez’s footsteps to launch his own TV channel",
+      "clusterId": "6ab385e1d3eb721e9a1dded5",
+      "id": "6ab2bd1b4b8dd7dfb7d1fd04",
+      "summary": "Trump has launched his own channel amid an ongoing rift with the White House press pool.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/afp_6ab27742bda8-1790080834.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "Sports",
+      "publishedAt": "2026-09-22T15:32:27.000Z",
+      "url": "https://www.aljazeera.com/features/2026/9/22/the-return-of-palestinian-football-we-are-a-people-who-must?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "The return of Palestinian football: ‘We are a people who must live’",
+      "clusterId": "6ab385e1d3eb721e9a1dded6",
+      "id": "6ab2bd1c4b8dd7dfb7d1fd05",
+      "summary": "The Martyrs’ World Cup brings Palestinian football back after nearly three years, despite military restrictions.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/DSC05463-1790072896.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-22T15:27:49.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/22/rubio-defends-trumps-white-house-ban-on-cnn-ms-now-and-politico?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Rubio defends Trump’s White House ban on CNN, MS NOW and Politico",
+      "clusterId": "6ab385e1d3eb721e9a1ddec4",
+      "id": "6ab2bd1d4b8dd7dfb7d1fd06",
+      "summary": "The White House launched 'Trump TV' as major networks suspended the television pool covering the US president.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/AFP__20260921__C8XJ3TD__v1__HighRes__UsStateSecretaryMarcoRubioTravelsToNewYorkForUn-1790076935.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "Health",
+      "publishedAt": "2026-09-22T15:23:14.000Z",
+      "url": "https://www.aljazeera.com/news/2026/9/22/dozens-sue-glp-1-drug-companies-over-vision-loss-allegations?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Dozens of people sue GLP-1 drug companies over alleged vision loss",
+      "clusterId": "6ab385e1d3eb721e9a1dded7",
+      "id": "6ab2a438084fd7127cadbd80",
+      "summary": "More than 90 lawsuits against GLP-1 companies claim rare eye condition resulted from diabetes and weight loss drugs.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/ap_6ab27724983d1-1790080804.jpg?resize=1920%2C1440"
+    },
+    {
+      "category": "World",
+      "publishedAt": "2026-09-22T15:19:19.000Z",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/9/22/trump-to-un-do-i-annihilate-iran-or-make-a?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "Trump to UN: do I ‘annihilate’ Iran or ‘make a deal?’",
+      "clusterId": "6ab385e1d3eb721e9a1dded2",
+      "id": "6ab2a439084fd7127cadbd81",
+      "summary": "US President Donald Trump told the UN General Assembly that he has a ‘big decision to make’ on Iran.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/wide_thumb-1790090323.jpg?resize=1920%2C1080&quality=80"
+    },
+    {
+      "category": "Politics",
+      "publishedAt": "2026-09-22T15:01:19.000Z",
+      "url": "https://www.aljazeera.com/features/2026/9/22/whats-behind-french-protests-against-a-new-police-bill?traffic_source=rss",
+      "source": "Al Jazeera",
+      "title": "What’s behind French protests against a new police bill?",
+      "clusterId": "6ab385e1d3eb721e9a1dded8",
+      "id": "6ab2a18c084fd7127cadbd13",
+      "summary": "Critics say controversial law will give police officers a 'licence to kill'.",
+      "imageUrl": "https://www.aljazeera.com/wp-content/uploads/2026/09/AFP__20260920__C8TV9YR__v1__HighRes__FrancePoliceJusticeDemo-1790081997_935b79-1790085545.jpg?resize=1200%2C630&quality=80"
+    }
+  ],
+  "totalArticles": 206,
+  "timeline": {
+    "data": [
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-18T18:56:17.000Z",
+        "intensity": 1,
+        "label": "Kennedy Center Losing",
+        "id": "6ab385e2d3eb721e9a1ddf38",
+        "endTime": "2026-09-18T18:56:17.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-18T23:07:16.000Z",
+        "intensity": 1,
+        "label": "Tata Sons Indias",
+        "id": "6ab385e2d3eb721e9a1ddf37",
+        "endTime": "2026-09-18T23:07:16.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-19T11:50:50.000Z",
+        "intensity": 1,
+        "label": "Enough Enough Women",
+        "id": "6ab385e2d3eb721e9a1ddf36",
+        "endTime": "2026-09-19T11:50:50.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-19T17:23:37.000Z",
+        "intensity": 1,
+        "label": "Trump Escalates Media",
+        "id": "6ab385e2d3eb721e9a1ddf35",
+        "endTime": "2026-09-19T17:23:37.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-19T23:01:38.000Z",
+        "intensity": 1,
+        "label": "Head Teacher Abuser",
+        "id": "6ab385e2d3eb721e9a1ddf34",
+        "endTime": "2026-09-19T23:01:38.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-19T23:01:45.000Z",
+        "intensity": 1,
+        "label": "Dont Even Parents",
+        "id": "6ab385e2d3eb721e9a1ddf33",
+        "endTime": "2026-09-19T23:01:45.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-19T23:01:57.000Z",
+        "intensity": 1,
+        "label": "Workers Think Tech",
+        "id": "6ab385e2d3eb721e9a1ddf32",
+        "endTime": "2026-09-19T23:01:57.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-19T23:18:06.000Z",
+        "intensity": 1,
+        "label": "Mums Viral Barefoot",
+        "id": "6ab385e2d3eb721e9a1ddf31",
+        "endTime": "2026-09-19T23:18:06.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-19T23:18:18.000Z",
+        "intensity": 1,
+        "label": "Cultural Treasures Destroyed",
+        "id": "6ab385e2d3eb721e9a1ddf30",
+        "endTime": "2026-09-19T23:18:18.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-19T23:49:26.000Z",
+        "intensity": 1,
+        "label": "Houthis Targeted Saudi",
+        "id": "6ab385e2d3eb721e9a1ddf2f",
+        "endTime": "2026-09-19T23:49:26.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-20T05:01:47.000Z",
+        "intensity": 1,
+        "label": "Fans React Sheeran",
+        "id": "6ab385e2d3eb721e9a1ddf2e",
+        "endTime": "2026-09-20T05:01:47.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-20T10:45:39.000Z",
+        "intensity": 1,
+        "label": "Largest Attack Moscow",
+        "id": "6ab385e2d3eb721e9a1ddf2d",
+        "endTime": "2026-09-20T10:45:39.000Z"
+      },
+      {
+        "articleCount": 3,
+        "sources": [
+          "BBC News",
+          "NPR News"
+        ],
+        "startTime": "2026-09-20T16:36:43.000Z",
+        "intensity": 3,
+        "label": "Arch Military Complex Trump",
+        "id": "6ab385e1d3eb721e9a1ddec7",
+        "endTime": "2026-09-22T19:25:05.000Z"
+      },
+      {
+        "articleCount": 3,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-20T17:25:49.000Z",
+        "intensity": 3,
+        "label": "Burnham Meeting Trump",
+        "id": "6ab385e1d3eb721e9a1ddec8",
+        "endTime": "2026-09-22T19:15:57.000Z"
+      },
+      {
+        "articleCount": 4,
+        "sources": [
+          "BBC News",
+          "NPR News"
+        ],
+        "startTime": "2026-09-20T17:29:29.000Z",
+        "intensity": 4,
+        "label": "Merz State Chancellor",
+        "id": "6ab385e2d3eb721e9a1ddf04",
+        "endTime": "2026-09-21T13:34:20.000Z"
+      },
+      {
+        "articleCount": 3,
+        "sources": [
+          "BBC News",
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-20T19:04:11.000Z",
+        "intensity": 3,
+        "label": "Imran Khan Islamabad Pakistan",
+        "id": "6ab385e1d3eb721e9a1ddea8",
+        "endTime": "2026-09-23T06:59:03.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "NPR News"
+        ],
+        "startTime": "2026-09-20T21:39:24.000Z",
+        "intensity": 1,
+        "label": "Poison Suspected Deaths",
+        "id": "6ab385e2d3eb721e9a1ddf2c",
+        "endTime": "2026-09-20T21:39:24.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "NPR News"
+        ],
+        "startTime": "2026-09-20T21:53:00.000Z",
+        "intensity": 1,
+        "label": "Federal Immigration Agent",
+        "id": "6ab385e2d3eb721e9a1ddf2b",
+        "endTime": "2026-09-20T21:53:00.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-20T22:28:15.000Z",
+        "intensity": 1,
+        "label": "Workers Came Across",
+        "id": "6ab385e2d3eb721e9a1ddf2a",
+        "endTime": "2026-09-20T22:28:15.000Z"
+      },
+      {
+        "articleCount": 2,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-20T23:09:42.000Z",
+        "intensity": 2,
+        "label": "Released Secretly Teacher",
+        "id": "6ab385e2d3eb721e9a1ddf29",
+        "endTime": "2026-09-20T23:12:31.000Z"
+      },
+      {
+        "articleCount": 3,
+        "sources": [
+          "BBC News",
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T00:05:11.000Z",
+        "intensity": 3,
+        "label": "Results Russia Surprises",
+        "id": "6ab385e2d3eb721e9a1ddf1c",
+        "endTime": "2026-09-21T08:47:06.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T00:53:15.000Z",
+        "intensity": 1,
+        "label": "Sahel Smaller Footprint",
+        "id": "6ab385e2d3eb721e9a1ddf28",
+        "endTime": "2026-09-21T00:53:15.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T01:19:42.000Z",
+        "intensity": 1,
+        "label": "Trump Administration Readies",
+        "id": "6ab385e2d3eb721e9a1ddf27",
+        "endTime": "2026-09-21T01:19:42.000Z"
+      },
+      {
+        "articleCount": 2,
+        "sources": [
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T01:30:46.000Z",
+        "intensity": 2,
+        "label": "Explosions Aleppo Army",
+        "id": "6ab385e2d3eb721e9a1ddf25",
+        "endTime": "2026-09-21T04:19:00.000Z"
+      },
+      {
+        "articleCount": 2,
+        "sources": [
+          "BBC News",
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T02:27:52.000Z",
+        "intensity": 2,
+        "label": "Cargo Ship Crashes",
+        "id": "6ab385e2d3eb721e9a1ddf0a",
+        "endTime": "2026-09-21T13:18:20.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-21T04:00:38.000Z",
+        "intensity": 1,
+        "label": "Team Canada Europe",
+        "id": "6ab385e2d3eb721e9a1ddf26",
+        "endTime": "2026-09-21T04:00:38.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T05:21:41.000Z",
+        "intensity": 1,
+        "label": "Irans Military Preparing",
+        "id": "6ab385e2d3eb721e9a1ddf24",
+        "endTime": "2026-09-21T05:21:41.000Z"
+      },
+      {
+        "articleCount": 3,
+        "sources": [
+          "BBC News",
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T05:50:56.000Z",
+        "intensity": 3,
+        "label": "China Trump Hotline",
+        "id": "6ab385e2d3eb721e9a1ddf05",
+        "endTime": "2026-09-21T13:32:55.000Z"
+      },
+      {
+        "articleCount": 2,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-21T05:52:57.000Z",
+        "intensity": 2,
+        "label": "Clancy Lindsay Phone",
+        "id": "6ab385e1d3eb721e9a1ddee1",
+        "endTime": "2026-09-22T13:58:42.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T05:56:27.000Z",
+        "intensity": 1,
+        "label": "Meloni Promises Ban",
+        "id": "6ab385e2d3eb721e9a1ddf23",
+        "endTime": "2026-09-21T05:56:27.000Z"
+      },
+      {
+        "articleCount": 2,
+        "sources": [
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T06:17:27.000Z",
+        "intensity": 2,
+        "label": "Stop Wars Conflicts Wars Asked",
+        "id": "6ab385e1d3eb721e9a1dded4",
+        "endTime": "2026-09-22T15:49:12.000Z"
+      },
+      {
+        "articleCount": 3,
+        "sources": [
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T06:32:22.000Z",
+        "intensity": 3,
+        "label": "Madrid Mourinho Defeat",
+        "id": "6ab385e1d3eb721e9a1ddeec",
+        "endTime": "2026-09-22T12:11:18.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-21T06:51:48.000Z",
+        "intensity": 1,
+        "label": "Far Best Joy",
+        "id": "6ab385e2d3eb721e9a1ddf22",
+        "endTime": "2026-09-21T06:51:48.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-21T07:01:25.000Z",
+        "intensity": 1,
+        "label": "Presley Gerber Cindy",
+        "id": "6ab385e2d3eb721e9a1ddf21",
+        "endTime": "2026-09-21T07:01:25.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "BBC News"
+        ],
+        "startTime": "2026-09-21T07:20:27.000Z",
+        "intensity": 1,
+        "label": "Sydney Policeman Allegedly",
+        "id": "6ab385e2d3eb721e9a1ddf20",
+        "endTime": "2026-09-21T07:20:27.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T07:30:10.000Z",
+        "intensity": 1,
+        "label": "Afghanistan Killed Pakistani",
+        "id": "6ab385e2d3eb721e9a1ddf1f",
+        "endTime": "2026-09-21T07:30:10.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T07:45:12.000Z",
+        "intensity": 1,
+        "label": "South Korean Military",
+        "id": "6ab385e2d3eb721e9a1ddf1e",
+        "endTime": "2026-09-21T07:45:12.000Z"
+      },
+      {
+        "articleCount": 9,
+        "sources": [
+          "BBC News",
+          "NPR News",
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T08:39:38.000Z",
+        "intensity": 9,
+        "label": "White House Trump Cnn",
+        "id": "6ab385e1d3eb721e9a1ddec4",
+        "endTime": "2026-09-22T21:31:01.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "NPR News"
+        ],
+        "startTime": "2026-09-21T08:41:50.000Z",
+        "intensity": 1,
+        "label": "Suspects Accused Killing",
+        "id": "6ab385e2d3eb721e9a1ddf1d",
+        "endTime": "2026-09-21T08:41:50.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T08:53:31.000Z",
+        "intensity": 1,
+        "label": "Australias Deaths Outnumber",
+        "id": "6ab385e2d3eb721e9a1ddf1b",
+        "endTime": "2026-09-21T08:53:31.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "NPR News"
+        ],
+        "startTime": "2026-09-21T09:00:00.000Z",
+        "intensity": 1,
+        "label": "Farm Raised Thousands",
+        "id": "6ab385e2d3eb721e9a1ddf1a",
+        "endTime": "2026-09-21T09:00:00.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "NPR News"
+        ],
+        "startTime": "2026-09-21T09:00:00.000Z",
+        "intensity": 1,
+        "label": "Many Gop Candidates",
+        "id": "6ab385e2d3eb721e9a1ddf19",
+        "endTime": "2026-09-21T09:00:00.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "NPR News"
+        ],
+        "startTime": "2026-09-21T09:00:00.000Z",
+        "intensity": 1,
+        "label": "Data Center Backlash",
+        "id": "6ab385e2d3eb721e9a1ddf18",
+        "endTime": "2026-09-21T09:00:00.000Z"
+      },
+      {
+        "articleCount": 2,
+        "sources": [
+          "NPR News",
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T09:00:00.000Z",
+        "intensity": 2,
+        "label": "United Nations Power Converge United",
+        "id": "6ab385e1d3eb721e9a1ddeed",
+        "endTime": "2026-09-22T11:51:07.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T09:02:25.000Z",
+        "intensity": 1,
+        "label": "Aliko Dangote Refining",
+        "id": "6ab385e2d3eb721e9a1ddf17",
+        "endTime": "2026-09-21T09:02:25.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T09:08:47.000Z",
+        "intensity": 1,
+        "label": "Michael Carrick Demands",
+        "id": "6ab385e2d3eb721e9a1ddf16",
+        "endTime": "2026-09-21T09:08:47.000Z"
+      },
+      {
+        "articleCount": 4,
+        "sources": [
+          "Al Jazeera",
+          "BBC News"
+        ],
+        "startTime": "2026-09-21T09:42:24.000Z",
+        "intensity": 4,
+        "label": "Ice Driver Shot",
+        "id": "6ab385e1d3eb721e9a1ddebb",
+        "endTime": "2026-09-22T23:36:12.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T09:54:05.000Z",
+        "intensity": 1,
+        "label": "Israelis Feel Safer",
+        "id": "6ab385e2d3eb721e9a1ddf15",
+        "endTime": "2026-09-21T09:54:05.000Z"
+      },
+      {
+        "articleCount": 2,
+        "sources": [
+          "BBC News",
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T10:00:31.000Z",
+        "intensity": 2,
+        "label": "Thousands Yemen Djibouti",
+        "id": "6ab385e1d3eb721e9a1ddee8",
+        "endTime": "2026-09-22T12:58:29.000Z"
+      },
+      {
+        "articleCount": 1,
+        "sources": [
+          "Al Jazeera"
+        ],
+        "startTime": "2026-09-21T10:01:30.000Z",
+        "intensity": 1,
+        "label": "Simple Guide Yemen",
+        "id": "6ab385e2d3eb721e9a1ddf14",
+        "endTime": "2026-09-21T10:01:30.000Z"
+      }
+    ],
+    "sources": [
+      "Al Jazeera",
+      "BBC News",
+      "NPR News"
+    ]
+  }
+}

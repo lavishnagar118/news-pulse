@@ -8,6 +8,7 @@ import {
   IngestionJob,
   IngestionTriggerResponse,
   TimelineResponse,
+  BootstrapData,
 } from './types';
 
 // Read API URL from environment with localhost:5000 fallback
@@ -272,5 +273,61 @@ export async function fetchCategories(): Promise<CategoryCount[]> {
   }
 
   return res.json();
+}
+
+let memoryCachedBootstrap: BootstrapData | null = null;
+
+export function setCachedBootstrapData(data: BootstrapData | null): void {
+  memoryCachedBootstrap = data;
+}
+
+export function getCachedBootstrapData(): BootstrapData | null {
+  return memoryCachedBootstrap;
+}
+
+/**
+ * Fetch static bootstrap news snapshot.
+ * Serves immediate public news dataset from Vercel static CDN (/data/bootstrap.json)
+ * without waiting for Render cold starts.
+ */
+export async function fetchBootstrapData(): Promise<BootstrapData | null> {
+  if (memoryCachedBootstrap) {
+    return memoryCachedBootstrap;
+  }
+
+  try {
+    if (typeof window !== 'undefined') {
+      const res = await fetch('/data/bootstrap.json', { cache: 'no-cache' });
+      if (res.ok) {
+        const data: BootstrapData = await res.json();
+        memoryCachedBootstrap = data;
+        return data;
+      }
+    } else {
+      // In Node.js / testing environments, resolve local file if available
+      try {
+        const fs = await import('fs');
+        const path = await import('path');
+        const candidates = [
+          path.join(process.cwd(), 'public', 'data', 'bootstrap.json'),
+          path.join(process.cwd(), 'frontend', 'public', 'data', 'bootstrap.json'),
+        ];
+        for (const p of candidates) {
+          if (fs.existsSync(p)) {
+            const raw = fs.readFileSync(p, 'utf-8');
+            const data: BootstrapData = JSON.parse(raw);
+            memoryCachedBootstrap = data;
+            return data;
+          }
+        }
+      } catch {
+        // Ignore in environments without fs
+      }
+    }
+  } catch {
+    // Fail gracefully
+  }
+
+  return null;
 }
 

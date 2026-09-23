@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { ExternalLink, Clock, ArrowLeft, Layers, Bookmark } from 'lucide-react';
 import { ArticleDetail } from '@/lib/types';
-import { fetchArticleById } from '@/lib/api';
+import { fetchArticleById, fetchBootstrapData } from '@/lib/api';
 import { formatDateTime, getCategoryBadgeStyle, getSourceBadgeStyle, refineClusterLabel } from '@/lib/formatters';
 import { ImageWithFallback } from '@/components/ui/ImageWithFallback';
 import { ArticleCard } from '@/components/news/ArticleCard';
@@ -21,18 +21,48 @@ export default function ArticlePage() {
 
   useEffect(() => {
     if (!id) return;
-    setIsLoading(true);
     setError(null);
 
+    let isSubscribed = true;
+
+    // Fast-path: check bootstrap snapshot for instant story preview
+    fetchBootstrapData().then((bootstrap) => {
+      if (!isSubscribed || !bootstrap?.articles) return;
+      const found = bootstrap.articles.find((a) => a.id === id);
+      if (found) {
+        setArticle((prev) =>
+          prev || {
+            ...found,
+            content: found.summary,
+            clusterLabel: null,
+            relatedArticles: [],
+          }
+        );
+        setIsLoading(false);
+      }
+    });
+
+    // Background live API fetch for full article text and related stories
     fetchArticleById(id)
       .then((data) => {
+        if (!isSubscribed) return;
         setArticle(data);
         setIsLoading(false);
       })
       .catch((err) => {
-        setError(err.message || 'Article not found');
+        if (!isSubscribed) return;
+        setArticle((current) => {
+          if (!current) {
+            setError(err.message || 'Article not found');
+          }
+          return current;
+        });
         setIsLoading(false);
       });
+
+    return () => {
+      isSubscribed = false;
+    };
   }, [id]);
 
   if (isLoading) {

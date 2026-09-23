@@ -17,16 +17,19 @@ function SearchContent() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   useEffect(() => {
     if (!initialQuery) {
       setArticles([]);
       setTotal(0);
+      setIsError(false);
       return;
     }
 
     setIsLoading(true);
+    setIsError(false);
     searchArticles(initialQuery, {
       category: selectedCategory !== 'All' ? selectedCategory : undefined,
       limit: 30,
@@ -34,11 +37,13 @@ function SearchContent() {
       .then((res) => {
         setArticles(res.data);
         setTotal(res.total);
+        setIsError(false);
         setIsLoading(false);
       })
       .catch(() => {
         setArticles([]);
         setTotal(0);
+        setIsError(true);
         setIsLoading(false);
       });
   }, [initialQuery, selectedCategory]);
@@ -134,6 +139,29 @@ function SearchContent() {
               <div className="h-5 bg-stone-200 rounded w-full" />
             </div>
           ))}
+        </div>
+      ) : isError ? (
+        <div className="py-16 text-center text-stone-600 space-y-3">
+          <p className="font-serif text-lg font-bold text-stone-800">
+            Search is temporarily unavailable. The latest stories are still available.
+          </p>
+          <p className="text-xs text-stone-500">
+            Our live search index is waking up. You can browse the latest news wire or return to the front page.
+          </p>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-stone-900 text-white rounded-xs hover:bg-stone-800 transition"
+            >
+              Front Page
+            </Link>
+            <Link
+              href="/latest"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border border-stone-300 text-stone-700 rounded-xs hover:bg-stone-50 transition"
+            >
+              Latest Wire
+            </Link>
+          </div>
         </div>
       ) : articles.length === 0 ? (
         initialQuery ? (
