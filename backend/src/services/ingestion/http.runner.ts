@@ -33,7 +33,11 @@ export class HttpIngestionRunner implements IIngestionRunner {
         .collection<{ _id: string; url: string }>('service_registry')
         .findOne({ _id: 'news-pulse-scraper' });
       if (registry?.url && /^https?:\/\//i.test(registry.url)) {
-        return registry.url.trim().replace(/\/$/, '');
+        let regUrl = registry.url.trim().replace(/\/$/, '');
+        if (regUrl === 'https://news-pulse-scraper.onrender.com') {
+          regUrl = 'https://news-pulse-scraper-zlxx.onrender.com';
+        }
+        return regUrl;
       }
     } catch {
       // If service_registry is unavailable, proceed to env var fallback
@@ -44,6 +48,13 @@ export class HttpIngestionRunner implements IIngestionRunner {
       let baseUrl = config.scraperServiceUrl.trim().replace(/\/$/, '');
       if (!/^https?:\/\//i.test(baseUrl)) {
         baseUrl = `http://${baseUrl}`;
+      }
+      if (
+        baseUrl.includes('news-pulse-scraper:10000') ||
+        baseUrl === 'http://news-pulse-scraper' ||
+        baseUrl === 'https://news-pulse-scraper.onrender.com'
+      ) {
+        baseUrl = 'https://news-pulse-scraper-zlxx.onrender.com';
       }
       return baseUrl;
     }

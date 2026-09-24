@@ -21,10 +21,7 @@ services:
       - key: SCRAPER_MODE
         value: http
       - key: SCRAPER_SERVICE_URL
-        fromService:
-          type: web
-          name: news-pulse-scraper
-          property: hostport
+        value: https://news-pulse-scraper-zlxx.onrender.com
       - key: INGESTION_SERVICE_SECRET
         generateValue: true # Cryptographically secure secret generated automatically by Render
 

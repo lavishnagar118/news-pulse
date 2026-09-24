@@ -277,7 +277,7 @@ In cloud environments (such as Render), the Node.js REST API runs as a standalon
 | `MONGODB_URI` | MongoDB Atlas connection string | `mongodb+srv://<user>:<password>@<cluster>.mongodb.net/news_pulse` |
 | `CORS_ORIGIN` | Allowed frontend origin for CORS | `https://your-frontend.vercel.app` |
 | `SCRAPER_MODE` | Ingestion dispatch mode | `http` |
-| `SCRAPER_SERVICE_URL` | URL of the Python scraper service | `https://news-pulse-scraper.onrender.com` |
+| `SCRAPER_SERVICE_URL` | URL of the Python scraper service | `https://news-pulse-scraper-zlxx.onrender.com` |
 | `INGESTION_SERVICE_SECRET` | Shared secret for scraper authentication | Generated secret (matches scraper service) |
 
 ### Ingestion Dispatch via HTTP Runner
